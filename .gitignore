@@ -1,0 +1,16 @@
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Build output (none is required to run this project)
+node_modules/
+dist/
+
+# SQLite database created by server.py (never commit user data)
+attrivue.db
+*.db
+*.sqlite3
