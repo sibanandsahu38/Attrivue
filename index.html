@@ -1,14 +1,356 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Attrivue — Attrition Predictor</title>
-<meta name="description" content="Attrivue: plain-language attrition risk explanations, what-if simulations and ranked company actions. Everything runs locally in your browser.">
+<title>Attrivue</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--paper:#eef0ff;--surface:#fff;--surface2:#f1f2ff;--text:#171b37;--text2:#58617c;
+--line:#cdd2e9;--line-soft:#e2e5f2;
+--accent:#5145c8;--accent-text:#fff;--accent-soft:#eae9ff;
+--red:#b52d3c;--red-soft:#fff0f2;--amber:#925a12;--amber-soft:#fff5e4;--green:#177054;--green-soft:#e5f6ef;
+--r:14px;--sh:0 14px 36px rgba(20,21,66,.07);--sh-sm:0 4px 14px rgba(20,21,66,.09);
+--fh:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+--fb:'IBM Plex Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+--fm:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+html[data-theme="dark"]{
+--paper:#0b0e23;--surface:#141a36;--surface2:#202746;--text:#f6f5ff;--text2:#bec3dc;
+--line:#333d65;--line-soft:#293153;
+--accent:#a99aff;--accent-text:#101128;--accent-soft:#2c2b57;
+--red:#ff9eaa;--red-soft:#422634;--amber:#f1c883;--amber-soft:#423321;--green:#83dfb8;--green-soft:#1c3837;
+--sh:0 16px 42px rgba(0,0,0,.22);--sh-sm:0 5px 16px rgba(0,0,0,.15);
+}
+[hidden]{display:none!important}
+body{background:var(--paper);color:var(--text);font-family:var(--fb);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--fh);line-height:1.2}
+h1{font-size:26px}h2{font-size:20px}h3{font-size:17px}h4{font-size:14px}
+a{color:var(--accent)}
+.mono{font-family:var(--fm)}
+.muted{color:var(--text2)}
+.small{font-size:12.5px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+::selection{background:var(--accent-soft)}
+/* ===== layout ===== */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:236px;flex:0 0 236px;background:radial-gradient(circle at 0 0,rgba(119,94,241,.34),transparent 50%),linear-gradient(155deg,#191648,#11172f 72%,#0b1028);border-right:1px solid rgba(192,196,255,.17);color:#f5f3ff;display:flex;flex-direction:column;padding:20px 12px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:10px;align-items:center;font-family:var(--fh);font-weight:700;font-size:16px;line-height:1.22;padding:2px 8px 20px;border-bottom:1px solid rgba(192,196,255,.18);margin-bottom:18px;min-width:0}
+.brand span{min-width:0;overflow-wrap:anywhere}
+.brand-mark{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:11px;background:#9c8efa;color:#111126;font-family:var(--fh);font-size:15px;box-shadow:0 8px 22px rgba(133,112,239,.28)}
+.brand-name{display:block}.brand-caption{display:block;margin-top:3px;font:600 10px var(--fm);letter-spacing:.12em;color:#bcbafb}
+.nav{display:flex;flex-direction:column;gap:4px;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid transparent;border-radius:10px;color:var(--text);text-decoration:none;font-weight:500;min-height:44px}
+.nav-item:hover{background:var(--surface2)}
+.nav-item.active{background:var(--accent-soft);border-color:var(--line);font-weight:600}
+.sidebar .nav-item{color:#d2d5ed}
+.sidebar .nav-item:hover{background:rgba(156,142,250,.13);color:#fff}
+.sidebar .nav-item.active{background:rgba(156,142,250,.22);border-color:rgba(186,181,255,.3);box-shadow:none;color:#fff;font-weight:600}
+.sidebar-foot{display:flex;flex-direction:column;gap:2px;padding:12px 8px 0;border-top:1px solid rgba(192,196,255,.18)}
+.sidebar-foot .muted{color:#bfc3df}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative;isolation:isolate;background:radial-gradient(circle at 10% 2%,rgba(125,104,241,.21),transparent 36%),radial-gradient(circle at 92% 64%,rgba(76,146,212,.13),transparent 44%),var(--paper)}
+.main::before{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background-image:linear-gradient(rgba(92,93,158,.065) 1px,transparent 1px),linear-gradient(90deg,rgba(92,93,158,.065) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+html[data-theme="dark"] .main{background:radial-gradient(circle at 7% 0,rgba(86,64,195,.37),transparent 40%),radial-gradient(circle at 92% 65%,rgba(35,98,156,.28),transparent 48%),var(--paper)}
+html[data-theme="dark"] .main::before{background-image:linear-gradient(rgba(165,166,233,.065) 1px,transparent 1px),linear-gradient(90deg,rgba(165,166,233,.065) 1px,transparent 1px)}
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:10px;padding:10px 20px;background:#0d1029;border-bottom:1px solid rgba(192,196,255,.2);color:#f4f2ff}
+.topbar .muted{color:#b4b8d5}
+.topbar .input{background:#151a38;color:#f5f3ff;border-color:#373d66;box-shadow:none}
+.topbar .tb-icon{background:#161b39;color:#f4f2ff;border-color:#393f6b;box-shadow:none}
+.topbar .tb-icon:hover,.topbar .tb-icon[aria-pressed="true"]{background:#2b2d5b}
+.topbar kbd{background:#242949;border-color:#3e466d;color:#c9c9ec}
+.topbar .menu{color:var(--text)}
+.tb-field{display:flex;align-items:center;gap:8px}
+.tb-spacer{flex:1}
+.tb-icon{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--sh-sm);cursor:pointer;font-family:var(--fb);font-size:13.5px;color:var(--text)}
+.tb-icon:hover{background:var(--surface2)}
+.tb-icon:active{transform:translate(2px,2px);box-shadow:none}
+.tb-icon[aria-pressed="true"]{background:var(--accent-soft)}
+kbd{font-family:var(--fm);font-size:11px;border:1px solid var(--line-soft);border-radius:5px;padding:1px 5px;color:var(--text2);background:var(--paper)}
+.view{position:relative;z-index:1;padding:28px 32px 96px;max-width:1240px;width:100%;margin:0 auto;min-width:0}
+.view:focus{outline:none}
+.bottombar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1.5px solid var(--line);padding:6px 8px calc(6px + env(safe-area-inset-bottom));gap:4px}
+.bottombar .nav-item{flex:1;justify-content:center;padding:8px 2px;font-size:11px;flex-direction:column;gap:2px}
+.bottombar .nav-item span{font-size:10.5px}
+.more-wrap{position:relative;flex:1;display:flex}
+.more-wrap .nav-item{width:100%}
+.more-wrap .menu{top:auto;bottom:calc(100% + 10px);left:auto;right:0;min-width:min(270px,calc(100vw - 24px))}
+@media (max-width:767px){
+.sidebar{display:none}
+.bottombar{display:flex}
+.view{padding:16px 14px 120px}
+.topbar{flex-wrap:wrap}
+.tb-label,kbd{display:none}
+.grid-2,.grid-3,.grid-4,.kpis,.wi-gauges,.form-grid{grid-template-columns:1fr!important}
+}
+@media (min-width:768px) and (max-width:1100px){.topbar{flex-wrap:wrap}}
+@media (max-width:1023px) and (min-width:768px){.grid-4,.kpis{grid-template-columns:1fr 1fr}.grid-2,.grid-3{grid-template-columns:1fr}}
+/* ===== components ===== */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:20px;min-width:0}
+.card h3{margin-bottom:10px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--accent);border-radius:var(--r);box-shadow:var(--sh);padding:16px;min-width:0}
+.kpi-label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.kpi-num{font-family:var(--fm);font-size:clamp(20px,2vw,27px);font-weight:600;margin-top:4px;overflow-wrap:anywhere}
+.kpi-sub{font-size:12.5px;color:var(--text2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 16px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;box-shadow:var(--sh-sm);transition:transform .2s,box-shadow .2s,background .2s;text-decoration:none}
+.btn:hover{background:var(--surface2)}
+.btn:active{transform:translate(2px,2px);box-shadow:none}
+.btn-primary{background:var(--accent);color:var(--accent-text)}
+.btn-primary:hover{background:var(--accent);filter:brightness(1.08)}
+.btn-danger{background:var(--red);color:#fff}
+html[data-theme="dark"] .btn-danger,html[data-theme="dark"] .banner{color:#230d1c}
+html[data-theme="dark"] .banner button{color:#230d1c;border-color:#230d1c}
+.btn-ghost{border-color:transparent;box-shadow:none;background:transparent}
+.btn[disabled]{opacity:.5;cursor:not-allowed;box-shadow:none;transform:none}
+.btn.loading::after{content:'';width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.input{display:block;width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--text);font-family:var(--fb);font-size:14px}
+.input:focus{outline:2px solid var(--accent);outline-offset:1px}
+.input-sm{min-height:36px;padding:6px 10px;font-size:13px;width:auto}
+.input.invalid{border-color:var(--red)}
+textarea.input{min-height:80px;resize:vertical}
+label{display:block;font-weight:600;font-size:13.5px;margin-bottom:14px}
+label .input,label .num-wrap{margin-top:6px}
+.num-wrap{display:flex;align-items:stretch}
+.num-wrap .unit{display:flex;align-items:center;padding:0 10px;border:1.5px solid var(--line);background:var(--surface2);font-size:12.5px;color:var(--text2);font-family:var(--fm)}
+.num-wrap .unit.pre{border-right:none;border-radius:10px 0 0 10px}
+.num-wrap .input{border-radius:10px 0 0 10px}
+.num-wrap .input+.unit{border-left:none;border-radius:0 10px 10px 0}
+.num-wrap .unit.pre+.input{border-radius:0 10px 10px 0;border-left:1.5px solid var(--line)}
+.switch{position:relative;width:46px;height:26px;border:1.5px solid var(--line);border-radius:13px;background:var(--surface2);cursor:pointer;flex:0 0 auto;transition:background .2s}
+.switch .knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border:1.5px solid var(--line);border-radius:50%;background:var(--surface);box-shadow:var(--sh-sm);transition:left .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"] .knob{left:22px;background:var(--accent-text)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1.5px solid;font-size:12.5px;font-weight:700;font-family:var(--fm);white-space:nowrap}
+.r-high{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+.r-med{background:var(--amber-soft);color:var(--amber);border-color:var(--amber)}
+.r-low{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+.table-wrap{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);box-shadow:var(--sh);overflow:auto;max-width:100%}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th{font-family:var(--fh);text-align:left;padding:12px 14px;border-bottom:2px solid var(--line);background:var(--surface2);white-space:nowrap}
+.table td{padding:11px 14px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.table tbody tr:hover{background:var(--surface2)}
+.table tbody tr:last-child td{border-bottom:none}
+.th-btn{all:unset;cursor:pointer;display:inline-flex;gap:4px;align-items:center;font:inherit;min-height:32px}
+.row-link{all:unset;cursor:pointer;color:var(--accent);font-weight:600}
+.row-link:hover{text-decoration:underline}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1.5px solid var(--line);border-radius:999px;background:var(--surface);font-size:12.5px;font-weight:600;font-family:var(--fm)}
+.chip-good{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+.chip-bad{background:var(--red-soft);color:var(--red);border-color:var(--red)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.callout{border:1.5px solid var(--line);border-left-width:6px;border-radius:10px;padding:12px 14px;background:var(--accent-soft);margin:12px 0;font-size:14px}
+.callout.warn{background:var(--amber-soft);border-left-color:var(--amber)}
+.callout.danger{background:var(--red-soft);border-left-color:var(--red)}
+.empty{text-align:center;padding:48px 24px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.empty-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.skel{height:16px;border-radius:8px;background:var(--surface2);margin:10px 0;animation:pulse 1.2s ease-in-out infinite}
+.skel-wrap{border:1.5px solid var(--line-soft);border-radius:var(--r);padding:16px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+#toasts{position:fixed;right:16px;bottom:16px;z-index:120;display:flex;flex-direction:column;gap:10px;max-width:min(420px,calc(100vw - 32px))}
+@media (max-width:767px){#toasts{bottom:96px}}
+.toast{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;box-shadow:var(--sh);padding:12px 14px;font-size:14px;animation:tin .2s ease}
+.toast.out{opacity:0;transform:translateY(6px);transition:.2s}
+.toast.t-alert{border-left:6px solid var(--red)}
+.toast.t-check{border-left:6px solid var(--green)}
+.toast.t-undo{border-left:6px solid var(--accent)}
+.toast-btn{margin-left:auto;flex:0 0 auto;min-height:36px;padding:6px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--accent-soft);font-weight:700;cursor:pointer;font-family:var(--fb)}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+.modal-backdrop,.drawer-backdrop,.palette-backdrop,.tour-backdrop{position:fixed;inset:0;background:rgba(18,20,24,.5);z-index:60}
+.modal{position:fixed;z-index:71;top:50%;left:50%;transform:translate(-50%,-50%);width:min(540px,calc(100vw - 32px));max-height:calc(100vh - 48px);overflow:auto}
+.drawer-backdrop{z-index:80}
+.drawer{position:fixed;z-index:81;top:0;right:0;bottom:0;width:min(460px,100vw);background:var(--surface);border-left:1.5px solid var(--line);box-shadow:var(--sh);overflow-y:auto;padding:20px}
+.drawer-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}
+.drawer h3{margin:18px 0 8px}
+.palette-backdrop{z-index:90}
+.palette{position:fixed;z-index:91;top:12vh;left:50%;transform:translateX(-50%);width:min(600px,calc(100vw - 32px));padding:0;overflow:hidden}
+.palette .input{border:none;border-bottom:1.5px solid var(--line);border-radius:0;box-shadow:none;min-height:52px;font-size:16px}
+.palette ul{list-style:none;max-height:50vh;overflow:auto;padding:6px}
+.palette li{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:8px;cursor:pointer;min-height:44px}
+.palette li[aria-selected="true"],.palette li:hover{background:var(--accent-soft)}
+.p-group{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2);width:84px;flex:0 0 84px}
+.p-hint{margin-left:auto;color:var(--text2);font-size:12.5px}
+.tour-backdrop{z-index:95}
+.tour{position:fixed;z-index:96;bottom:24px;right:24px;width:min(420px,calc(100vw - 32px))}
+@media (max-width:767px){.tour{left:16px;right:16px;bottom:96px;width:auto}}
+.tour-step{font-family:var(--fm);font-size:12px;color:var(--text2);margin-bottom:6px}
+.menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;box-shadow:var(--sh);min-width:210px;padding:6px;z-index:50}
+.user-menu{position:relative}
+.menu-head{padding:8px 12px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--line-soft);margin-bottom:4px}
+.menu-item{display:flex;gap:10px;align-items:center;width:100%;text-align:left;padding:10px 12px;border:none;background:none;border-radius:8px;cursor:pointer;font-family:var(--fb);font-size:14px;color:var(--text);min-height:44px;text-decoration:none}
+.menu-item:hover{background:var(--surface2)}
+/* ===== views ===== */
+.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.quick{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.headline{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);padding:14px 18px;margin-bottom:20px;font-size:19px}
+.workspace-banner{position:relative;overflow:hidden;background:radial-gradient(circle at 13% 15%,rgba(132,111,245,.5),transparent 44%),radial-gradient(circle at 85% 90%,rgba(42,113,170,.48),transparent 48%),linear-gradient(120deg,#15123e,#0e1530);color:#f7f5ff;border:1px solid rgba(160,160,244,.3);border-radius:18px;padding:28px 32px;margin-bottom:24px;box-shadow:0 22px 48px rgba(15,17,59,.15);animation:panel-enter .4s ease-out both}
+.workspace-banner::before{content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);background-size:52px 52px}
+.workspace-banner>*{position:relative}.workspace-banner .eyebrow{display:block;margin-bottom:8px;font:600 11px var(--fm);letter-spacing:.15em;color:#c2bdfd;text-transform:uppercase}.workspace-banner h1{font-size:clamp(28px,3vw,40px);margin-bottom:8px;overflow-wrap:anywhere}.workspace-banner p{color:#d1d1ec;max-width:65ch}
+@media (max-width:640px){.workspace-banner{padding:22px 20px}.workspace-banner h1{font-size:28px}}
+.attn{list-style:none}
+.attn li{border-bottom:1px solid var(--line-soft)}
+.attn li:last-child{border-bottom:none}
+.attn button{all:unset;display:flex;flex-wrap:wrap;width:100%;gap:12px;align-items:center;padding:12px 6px;cursor:pointer;min-height:56px}
+.attn button:hover{background:var(--surface2)}
+.attn button>span:first-child{min-width:0;overflow-wrap:anywhere}
+.a-name{font-weight:600}
+.a-role{color:var(--text2);font-size:13px}
+.a-risk{margin-left:auto;flex:0 0 auto}
+.reasons-mini{display:flex;flex-wrap:wrap;gap:4px}
+.reasons-mini span{font-size:11.5px;background:var(--surface2);border:1px solid var(--line-soft);border-radius:6px;padding:1px 7px;color:var(--text2)}
+.risk-cell{display:flex;flex-direction:column;align-items:flex-start}
+.risk-explain-link{display:inline-flex;align-items:center;min-height:44px;font-size:12.5px;text-align:left}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar .input{width:auto;min-width:220px}
+.pager{display:flex;gap:10px;align-items:center;justify-content:flex-end;margin-top:12px}
+.reason{margin-bottom:12px}
+.reason-top{display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-bottom:4px}
+.reason-top strong{font-weight:600}
+.reason-value{color:var(--text2);font:500 12px var(--fm);white-space:nowrap}
+.remark{border-top:1px solid var(--line-soft);padding-top:14px}
+.remark-kicker{font:600 11px var(--fm);letter-spacing:.11em;text-transform:uppercase;color:var(--text2);margin-bottom:7px}
+.remark-status{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+.remark-explanation{font-size:13px;color:var(--text2);margin-bottom:12px}
+.remark-reasons,.remark-actions{list-style:none;padding:0}
+.remark-reasons li{margin-bottom:12px}
+.remark-actions li{border-left:3px solid var(--accent);padding:1px 0 1px 12px;margin:0 0 14px}
+.remark-actions strong,.remark-actions span{display:block}
+.remark-actions span{font-size:12.5px;color:var(--text2);margin-top:4px}
+.model-performance-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 0}
+.model-performance-list div{padding:9px 10px;border-radius:7px;background:var(--surface2);min-width:0}
+.model-performance-list dt{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text2)}
+.model-performance-list dd{font:600 14px var(--fm);overflow-wrap:anywhere}
+.ml-status{border-left:3px solid var(--accent);padding:9px 11px;background:var(--accent-soft);font-size:12.5px;color:var(--text2)}
+.driver-method{font-size:12px;color:var(--text2)}
+.employee-outcome{margin:12px 0;padding:11px 13px;border:1px solid var(--line-soft);border-radius:8px;background:var(--surface2)}
+.employee-outcome-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.employee-outcome-grid dt{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
+.employee-outcome-grid dd{font:600 14px var(--fm);margin-top:3px;overflow-wrap:anywhere}
+.employee-xai-loading{font-size:12px;color:var(--text2)}
+.xai-intro{font-size:12.5px;color:var(--text2);margin-bottom:12px}
+.xai-group{margin-top:12px}
+.xai-group h4{margin-bottom:7px}
+.xai-list{list-style:none;padding:0;margin:0}
+.xai-list li{margin:0 0 10px}
+.xai-factor-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.xai-factor-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.xai-factor-value,.xai-factor-impact{font:500 11px var(--fm);color:var(--text2);white-space:nowrap}
+.xai-meter{height:5px;margin-top:4px;border-radius:5px;background:var(--surface2);overflow:hidden}
+.xai-meter i{display:block;height:100%;background:var(--accent);border-radius:5px}
+.importance-list{list-style:none;padding:0;margin:12px 0 0}
+.importance-list li{margin-bottom:11px}
+.importance-head{display:flex;justify-content:space-between;gap:12px;font-size:13px}
+.importance-head strong{font-weight:600}.importance-value{color:var(--text2);font:500 11px var(--fm)}
+.importance-bar{height:6px;margin-top:4px;border-radius:5px;background:var(--surface2);overflow:hidden}
+.importance-bar i{display:block;height:100%;background:var(--accent)}
+.importance-bar i.negative{opacity:.48}
+.dashboard-risk-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:1023px){.dashboard-risk-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:767px){.dashboard-risk-kpis{grid-template-columns:1fr}}
+.bar{height:10px;border:1.5px solid var(--line);border-radius:6px;background:var(--surface2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.fields{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;font-size:13.5px}
+.fields dt{color:var(--text2);font-weight:600}
+.fields dd{font-family:var(--fm);word-break:break-word}
+.tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.tab{min-height:44px;padding:10px 16px;border:1.5px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font-family:var(--fb);font-weight:600;font-size:14px;box-shadow:var(--sh-sm)}
+.tab.active{background:var(--accent);color:var(--accent-text)}
+.tab:active{transform:translate(2px,2px);box-shadow:none}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+.form-section{grid-column:1/-1;margin-top:14px;font-family:var(--fh);font-weight:700;border-bottom:2px solid var(--line);padding-bottom:6px}
+.form-error{border:1.5px solid var(--red);background:var(--red-soft);color:var(--red);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:13.5px}
+.dropzone{border:2px dashed var(--line);border-radius:var(--r);padding:28px;text-align:center;color:var(--text2);margin-bottom:12px;background:var(--surface);cursor:pointer}
+.dropzone.drag{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
+.wi-gauges{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:end}
+.wi-result-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:14px 0}
+.wi-result-cell{padding:10px 12px;border:1px solid var(--line-soft);border-radius:8px;background:var(--surface2);min-width:0}
+.wi-result-label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text2)}
+.wi-result-value{display:block;margin-top:3px;font:600 17px var(--fm);overflow-wrap:anywhere}
+.wi-result-cell.wide{grid-column:1/-1}
+.wi-model-explanation{font-size:13px}
+.wi-changed-list{margin:6px 0 0;padding-left:19px;font-size:13px}
+.wi-changed-list li{margin:3px 0}
+.wi-field{margin-bottom:14px}
+.wi-top{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:6px}
+input[type="range"]{width:100%;accent-color:var(--accent);min-height:44px}
+.guide{padding-left:22px;display:flex;flex-direction:column;gap:8px;margin:8px 0}
+.rej{max-height:240px;overflow:auto;border:1.5px solid var(--line-soft);border-radius:10px;padding:10px 14px 10px 32px;font-size:13px;margin:8px 0}
+.log-list{list-style:none}
+.log-list li{padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13.5px}
+.set-row{display:flex;gap:14px;align-items:flex-start;margin:14px 0}
+.sep{border:none;border-top:1.5px solid var(--line-soft);margin:16px 0}
+.banner{position:fixed;top:0;left:0;right:0;z-index:130;background:var(--red);color:#fff;padding:10px 16px;font-weight:600;display:flex;gap:10px;align-items:center;justify-content:center;font-size:14px;flex-wrap:wrap}
+.banner button{margin-left:8px;min-height:36px;padding:4px 12px;border:1.5px solid #fff;border-radius:8px;background:transparent;color:#fff;font-weight:700;cursor:pointer;font-family:var(--fb)}
+.info{all:unset;cursor:help;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border:1.5px solid var(--line-soft);border-radius:50%;font-size:11px;font-weight:700;color:var(--text2);position:relative;font-family:var(--fm);vertical-align:middle}
+.info:hover,.info:focus-visible{border-color:var(--accent);color:var(--accent)}
+.info:hover::after,.info:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--text);color:var(--surface);padding:8px 10px;border-radius:8px;font-size:12.5px;font-weight:400;width:max-content;max-width:260px;z-index:99;line-height:1.4;font-family:var(--fb)}
+.login-wrap{position:relative;isolation:isolate;min-height:100vh;min-height:100svh;display:grid;grid-template-columns:minmax(0,1fr) minmax(370px,.85fr);align-items:center;gap:clamp(24px,5vw,90px);padding:clamp(24px,5vw,80px);background:#10132c url('https://images.pexels.com/photos/3861924/pexels-photo-3861924.jpeg?auto=compress&cs=tinysrgb&fit=crop&w=1920&q=85') center 44%/cover no-repeat;color:#f7f7ff}
+.login-wrap::before{content:'';position:absolute;z-index:0;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(7,9,28,.7),rgba(8,10,29,.25) 42%,rgba(7,9,28,.78) 100%),linear-gradient(0deg,rgba(9,11,31,.6),rgba(13,13,42,.1) 65%)}
+.login-art{position:relative;z-index:1;min-width:0;align-self:start;padding-top:clamp(18px,4vh,38px);padding-bottom:clamp(10px,4vh,30px);display:flex;flex-direction:column;gap:clamp(10px,2.2vh,22px);justify-content:flex-start}
+.login-visuals{position:relative;z-index:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start;gap:clamp(8px,1vw,12px);width:min(100%,470px);flex:0 1 auto}
+.login-demo{min-width:0;border:1px solid rgba(199,203,255,.32);border-radius:14px;background:rgba(218,219,255,.16);box-shadow:0 18px 36px rgba(4,4,20,.22);backdrop-filter:blur(10px);padding:clamp(10px,1.2vw,14px) clamp(13px,1.4vw,16px);color:#f7f7ff;animation:panel-enter .5s ease-out both}
+.login-demo-attn{animation-delay:.1s}.login-demo-reasons{grid-column:1;margin-left:clamp(0px,2vw,32px);animation-delay:.2s}
+.login-demo-label{font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:#c2c5ff;font-weight:700}.login-demo-number{font-family:var(--fh);font-size:clamp(22px,2.2vw,28px);font-weight:700;margin:4px 0 0}
+.login-spark{width:100%;height:clamp(24px,3vh,30px);margin-top:2px}.login-spark polyline{fill:none;stroke:#aaa1ff;stroke-width:3;stroke-dasharray:340;stroke-dashoffset:340;animation:trace-line 1s .25s ease-out forwards}
+.login-attn-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:3px 10px;margin-top:clamp(5px,1vh,8px);font-size:clamp(11.5px,1.1vw,12.5px);font-weight:600}.login-mini-risk{border-radius:999px;padding:2px 7px;font-size:11px;background:rgba(226,91,104,.32);color:#ffbdc3;white-space:nowrap}.login-mini-risk.medium{background:rgba(217,160,75,.26);color:#ffd597}.login-mini-risk.low{background:rgba(54,189,148,.25);color:#8ce5c8}
+.login-reason{margin-top:clamp(5px,1vh,8px);font-size:clamp(11.5px,1.05vw,12px);font-weight:600}.login-reason-bar{height:5px;border-radius:5px;background:rgba(255,255,255,.16);overflow:hidden;margin-top:3px}.login-reason-bar i{display:block;height:100%;border-radius:5px;background:#9d8cff}
+.login-copy{max-width:470px;animation:panel-enter .5s .12s ease-out both}.login-kicker{font-family:var(--fm);font-size:10px;letter-spacing:.18em;color:#d1ccff;font-weight:700;margin-bottom:8px}.login-copy h1{font-size:clamp(24px,2.6vw,38px);line-height:1.1;letter-spacing:-.03em;max-width:24ch;margin-bottom:10px;overflow-wrap:break-word;text-wrap:balance;text-shadow:0 3px 18px rgba(0,0,0,.55)}.login-copy p{color:#f1effb;font-size:clamp(12.5px,1.1vw,14.5px);line-height:1.45;max-width:54ch;text-shadow:0 2px 10px rgba(0,0,0,.6)}
+.login-panel{position:relative;z-index:1;min-width:0;display:flex;align-items:center;justify-content:center}.login-panel-inner{width:min(530px,100%);min-width:0;padding:clamp(20px,2.8vw,36px);border:1px solid rgba(195,194,255,.3);border-radius:20px;background:rgba(9,12,34,.86);box-shadow:0 24px 70px rgba(0,0,0,.34);backdrop-filter:blur(16px)}
+.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:clamp(12px,2vh,20px)}.login-mark{display:flex;align-items:center;justify-content:center;width:50px;height:50px;flex:0 0 50px;border-radius:13px;background:#988bfa;color:white;font-family:var(--fh);font-size:19px;font-weight:700;box-shadow:0 10px 26px rgba(135,117,255,.38)}.login-brand strong{display:block;font-family:var(--fh);font-size:clamp(18px,2vw,22px)}.login-brand small{display:block;color:#aaa7ff;letter-spacing:.16em;margin-top:2px;font-size:11px}
+.login-tabs{display:flex;gap:8px;margin:0 0 16px}.login-tab{min-height:44px;border:1px solid transparent;border-radius:10px;background:transparent;color:#eaeaff;padding:8px 18px;font:600 15px var(--fb);cursor:pointer}.login-tab.active{border-color:#303760;background:#11152f}
+.login-card{width:100%;display:flex;flex-direction:column;gap:8px;background:rgba(17,21,47,.88);border-color:#313961;box-shadow:none;padding:clamp(18px,2.2vw,28px)}.login-card h1{font-size:clamp(22px,2.3vw,28px)}.login-card .muted,.login-card .login-note{color:#c5c9f1}.login-card .muted{font-size:14px}.login-card form{display:grid;gap:10px}.login-card form label{margin:0}.login-card label .input,.login-card .pw-wrap{margin-top:5px}.login-card .pw-wrap .input{margin-top:0}.login-card .input{background:#0b0f26;border-color:#49517d;color:#fff;box-shadow:none}.login-card .input::placeholder{color:#acb2df}.login-card .btn-primary,.login-card .btn-primary:hover{background:#9b8cf5;color:#090b18;border-color:#9b8cf5;box-shadow:none}.login-card .pw-toggle{color:#b9bdf1}
+.pw-wrap{position:relative;display:block;margin-top:6px}
+.pw-wrap .input{padding-right:44px}
+.pw-toggle{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:36px;width:36px;border:none;background:none;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center}
+.login-note{display:flex;gap:8px;align-items:flex-start;justify-content:center;color:var(--text2);font-size:12px;line-height:1.35;border-top:1px solid var(--line-soft);padding-top:10px}.login-note svg{flex:0 0 auto}
+@keyframes panel-enter{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes from-left{from{opacity:0;transform:translateX(-64px)}to{opacity:1;transform:none}}
+@keyframes from-right{from{opacity:0;transform:translateX(64px)}to{opacity:1;transform:none}}
+@keyframes screen-next{from{opacity:0;transform:translateX(36px)}to{opacity:1;transform:none}}
+@keyframes screen-prev{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+.login-art,.login-visuals,.login-copy{animation:from-left .72s cubic-bezier(.2,.7,.2,1) both}
+.login-demo-attn{animation-delay:.08s}.login-demo-reasons{animation-delay:.16s}.login-copy{animation-delay:.22s}
+.login-panel{animation:from-right .72s .08s cubic-bezier(.2,.7,.2,1) both}
+.view.slide-next{animation:screen-next .28s ease}
+.view.slide-prev{animation:screen-prev .28s ease}
+@keyframes trace-line{to{stroke-dashoffset:0}}
+@media (max-width:1160px){.login-demo-reasons{display:none}.login-copy h1{font-size:clamp(24px,2.6vw,34px)}}
+@media (max-height:780px){.login-demo-reasons{display:none}.login-visuals{width:min(100%,430px)}.login-copy h1{font-size:clamp(22px,2.4vw,30px)}.login-copy p{font-size:12.5px}}
+@media (max-height:650px){.login-demo-reasons{display:none}.login-art{gap:14px}.login-visuals{width:min(100%,400px)}.login-wrap{padding-block:14px}.login-brand{margin-bottom:10px}.login-tabs{margin-bottom:10px}.login-card{padding:16px}.login-card form{gap:7px}}
+@media (max-width:900px){.login-wrap{grid-template-columns:1fr;place-items:center;padding:24px;background-position:center 32%}.login-art{display:none}.login-panel{width:100%}.login-panel-inner{width:min(500px,100%)}}
+@media (max-width:640px){.login-wrap{padding:14px}.login-panel-inner{padding:16px}.login-brand{margin-bottom:16px}.login-tabs{margin-bottom:12px}.login-card{padding:20px}}
+@media (max-width:640px) and (max-height:650px){.login-brand{margin-bottom:10px}.login-tabs{margin-bottom:10px}.login-card{padding:16px}}
+.c-red{color:var(--red)}.c-green{color:var(--green)}
+.print-only{display:none}
+/* ===== charts (shared flat ink style) ===== */
+.c-grid{stroke:var(--line-soft);stroke-width:1}
+.c-tick{fill:var(--text2);font-family:var(--fm);font-size:10px}
+.c-lab{fill:var(--text2);font-family:var(--fb);font-size:10.5px}
+.c-bar{stroke:var(--line);stroke-width:1}
+.c-line{fill:none;stroke:var(--accent);stroke-width:2.5}
+.c-dot{fill:var(--surface);stroke:var(--accent);stroke-width:2}
+.g-val{font-family:var(--fm);font-size:26px;font-weight:700}
+.g-lvl{font-family:var(--fh);font-size:13px;font-weight:600;fill:var(--text2)}
+.g-tick{fill:var(--text2);font-family:var(--fm);font-size:10px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media print{
+.sidebar,.topbar,.bottombar,#toasts,#modal-root,#drawer-root,#palette-root,#tour-root,.no-print,.banner,.btn,.tabs,.toolbar,.pager,.quick{display:none!important}
+html[data-theme="dark"]{--paper:#fff;--surface:#fff;--surface2:#eee;--text:#000;--text2:#444;--line:#999;--line-soft:#bbb;--accent:#333;--accent-soft:#eee}
+body{background:#fff;color:#000}
+.main{background:#fff!important}.main::before,.workspace-banner{display:none!important}
+.view{padding:0;max-width:none}
+.card,.kpi,.table-wrap,.headline{box-shadow:none;border-color:#999}
+.print-only{display:block;border:2px solid #000;padding:10px;margin:12px 0;font-weight:600}
+.table th{background:#eee}
+a{color:#000}
+}
+</style>
 </head>
 <body>
 <div id="app"></div>
@@ -18,14 +360,2214 @@
 <div id="palette-root"></div>
 <div id="tour-root"></div>
 <div class="print-only" id="print-warning">Scores are probabilities, not facts. They can be wrong. Never use them to pressure, punish or dismiss anyone. Use them to find people who need support and to improve working conditions.</div>
+<script>
+/* ===== CONFIG ===== */
+const APP_NAME='Attrivue';
+const PREFIX='attritionPredictor.v1.';
+const SCHEMA_VERSION=1;
+const PAGE_SIZE=25;
+const UNDO_MS=10000;
+const DEBOUNCE_MS=200;
+const MAX_CSV_ROWS=20000;
+const REASON_THRESHOLD=0.12;
+const HELP_THRESHOLD=0.01;
+const PERSONAL_ACTION_MIN_DROP=0.0005;
+const WHATIF_API_DEBOUNCE_MS=140;
+const RISK_MEDIUM_BOUNDARY=0.33;
+const RISK_HIGH_BOUNDARY=0.66;
+const SELF_TEST_TOLERANCE=0.003;
+const LOG_LIMIT=100;
+const SAMPLE_SIZE=25;
+const SAMPLE_SEED=20240607;
+const SAMPLE_POOL_PER_EMPLOYEE=120;
+const SAMPLE_PROFILE_VARIATION=0.24;
+const SAMPLE_FIELD_VARIATION=0.8;
+const SAMPLE_LAST_NAME_STEP=7;
+const HISTOGRAM_BINS=10;
+const TOP_LIST=3;
+const TOP_DETAIL=4;
+const REPLACEMENT_COST_DEFAULT=10000;
+const WARNING_TEXT='Scores are probabilities, not facts. They can be wrong. Never use them to pressure, punish or dismiss anyone. Use them to find people who need support and to improve working conditions.';
+const CAUSE_TEXT='These are patterns in the training data, not proof of cause. Pilot changes on a small group first.';
+const MODEL_TRAINED_ON={
+ ibm:'1,470 fictional employees from the classic IBM HR Analytics attrition dataset.',
+ atlas:'1,470 synthetic employees generated for a technology company lab.',
+ industry:'74,498 synthetic employees from a broad cross-industry survey.'
+};
+const isMac=/Mac|iPhone|iPad|iPod/.test(navigator.platform||navigator.userAgent);
 
-<script src="js/config.js"></script>
-<script src="js/models.js"></script>
-<script src="js/engine.js"></script>
-<script src="js/store.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/views.js"></script>
-<script src="js/features.js"></script>
-<script src="js/app.js"></script>
+/* ===== MODELS (LOCKED — copied exactly from the specification) ===== */
+const MODELS=[
+Object.assign({id:'ibm'}, {"intercept":-1.753,"num":{"DistanceFromHome":{"mean":9.193,"scale":8.104,"coef":0.286,"min":1,"max":29},"Education":{"mean":2.913,"scale":1.024,"coef":-0.024,"min":1,"max":5},"EnvironmentSatisfaction":{"mean":2.722,"scale":1.093,"coef":-0.373,"min":1,"max":4},"JobInvolvement":{"mean":2.73,"scale":0.7113,"coef":-0.352,"min":1,"max":4},"JobLevel":{"mean":2.064,"scale":1.107,"coef":-0.196,"min":1,"max":5},"JobSatisfaction":{"mean":2.729,"scale":1.102,"coef":-0.36,"min":1,"max":4},"MonthlyIncome":{"mean":6503,"scale":4706,"coef":-0.18,"min":1009,"max":19999},"NumCompaniesWorked":{"mean":2.693,"scale":2.497,"coef":0.325,"min":0,"max":9},"PercentSalaryHike":{"mean":15.21,"scale":3.659,"coef":-0.087,"min":11,"max":25},"PerformanceRating":{"mean":3.154,"scale":0.3607,"coef":0.034,"min":3,"max":4},"RelationshipSatisfaction":{"mean":2.712,"scale":1.081,"coef":-0.219,"min":1,"max":4},"StockOptionLevel":{"mean":0.7939,"scale":0.8518,"coef":-0.442,"min":0,"max":3},"TotalWorkingYears":{"mean":11.28,"scale":7.778,"coef":-0.449,"min":0,"max":40},"TrainingTimesLastYear":{"mean":2.799,"scale":1.289,"coef":-0.198,"min":0,"max":6},"WorkLifeBalance":{"mean":2.761,"scale":0.7062,"coef":-0.183,"min":1,"max":4},"YearsAtCompany":{"mean":7.008,"scale":6.124,"coef":0.278,"min":0,"max":40},"YearsInCurrentRole":{"mean":4.229,"scale":3.622,"coef":-0.372,"min":0,"max":18},"YearsSinceLastPromotion":{"mean":2.188,"scale":3.221,"coef":0.431,"min":0,"max":15},"YearsWithCurrManager":{"mean":4.123,"scale":3.567,"coef":-0.306,"min":0,"max":17}},"cat":{"BusinessTravel":{"Non-Travel":-0.479,"Travel_Frequently":0.559,"Travel_Rarely":-0.082},"Department":{"Human Resources":0.026,"Research & Development":-0.264,"Sales":0.237},"EducationField":{"Human Resources":0.1,"Life Sciences":-0.18,"Marketing":0.125,"Medical":-0.245,"Other":-0.161,"Technical Degree":0.36},"JobRole":{"Healthcare Representative":-0.243,"Human Resources":0.066,"Laboratory Technician":0.452,"Manager":-0.023,"Manufacturing Director":-0.174,"Research Director":-0.186,"Research Scientist":-0.183,"Sales Executive":-0.063,"Sales Representative":0.352},"OverTime":{"No":-0.752,"Yes":0.751}},"catbase":{"BusinessTravel":-0.001,"Department":-0.099,"EducationField":-0.113,"JobRole":0.001,"OverTime":-0.327},"catdef":{"BusinessTravel":"Travel_Rarely","Department":"Research & Development","EducationField":"Life Sciences","JobRole":"Sales Executive","OverTime":"No"},"medians":{"DistanceFromHome":7,"Education":3,"EnvironmentSatisfaction":3,"JobInvolvement":3,"JobLevel":2,"JobSatisfaction":3,"MonthlyIncome":4919,"NumCompaniesWorked":2,"PercentSalaryHike":14,"PerformanceRating":3,"RelationshipSatisfaction":3,"StockOptionLevel":1,"TotalWorkingYears":10,"TrainingTimesLastYear":3,"WorkLifeBalance":3,"YearsAtCompany":5,"YearsInCurrentRole":3,"YearsSinceLastPromotion":1,"YearsWithCurrManager":3},"hi":0.418,"mid":0.192,"base_rate":0.161,"cv_auc":0.829,"top10_prec":0.714,"n":1470,"roleKey":"JobRole","deptKey":"Department","name":"IBM HR","fix":[{"k":"OverTime","type":"set","v":"No","from":["Yes"]},{"k":"BusinessTravel","type":"set","v":"Travel_Rarely","from":["Travel_Frequently"]},{"k":"JobSatisfaction","type":"up"},{"k":"EnvironmentSatisfaction","type":"up"},{"k":"WorkLifeBalance","type":"up"},{"k":"JobInvolvement","type":"up"},{"k":"RelationshipSatisfaction","type":"up"},{"k":"StockOptionLevel","type":"max","v":1},{"k":"YearsSinceLastPromotion","type":"min","v":2},{"k":"PercentSalaryHike","type":"max","v":15},{"k":"MonthlyIncome","type":"mul","v":1.1},{"k":"TrainingTimesLastYear","type":"max","v":3},{"k":"DistanceFromHome","type":"min","v":10}]}),
+Object.assign({id:'atlas'}, {"intercept":-2.15,"num":{"DistanceFromHome":{"mean":22.5,"scale":12.81,"coef":-0.103,"min":1,"max":45},"Education":{"mean":2.913,"scale":1.024,"coef":-0.093,"min":1,"max":5},"Salary":{"mean":113000,"scale":103300,"coef":-0.001,"min":20387,"max":547204},"StockOptionLevel":{"mean":0.7939,"scale":0.8518,"coef":-0.449,"min":0,"max":3},"YearsAtCompany":{"mean":4.563,"scale":3.287,"coef":-0.074,"min":0,"max":10},"YearsInCurrentRole":{"mean":2.293,"scale":2.538,"coef":0.119,"min":0,"max":10},"YearsSinceLastPromotion":{"mean":3.441,"scale":2.944,"coef":-1.104,"min":0,"max":10},"YearsWithCurrManager":{"mean":2.239,"scale":2.505,"coef":-0.23,"min":0,"max":10}},"cat":{"BusinessTravel":{"Frequent Traveller":0.651,"No Travel":-0.654,"Some Travel":-0.031},"Department":{"Human Resources":-0.151,"Sales":0.579,"Technology":-0.462},"EducationField":{"Business Studies":0.736,"Computer Science":-0.063,"Economics":-0.529,"Human Resources":0.687,"Information Systems":-0.196,"Marketing":-0.362,"Other":-0.561,"Technical Degree":0.255},"JobRole":{"Analytics Manager":-0.176,"Data Scientist":1.337,"Engineering Manager":-0.909,"HR Business Partner":-0.646,"HR Executive":-0.394,"HR Manager":-0.255,"Machine Learning Engineer":-0.472,"Manager":-0.832,"Recruiter":1.143,"Sales Executive":0.096,"Sales Representative":0.948,"Senior Software Engineer":-0.384,"Software Engineer":0.508},"OverTime":{"No":-0.813,"Yes":0.779}},"catbase":{"BusinessTravel":0.034,"Department":-0.133,"EducationField":-0.148,"JobRole":0.267,"OverTime":-0.362},"catdef":{"BusinessTravel":"Some Travel","Department":"Technology","EducationField":"Computer Science","JobRole":"Sales Executive","OverTime":"No"},"medians":{"DistanceFromHome":22,"Education":3,"Salary":71199.5,"StockOptionLevel":1,"YearsAtCompany":4,"YearsInCurrentRole":1,"YearsSinceLastPromotion":3,"YearsWithCurrManager":1},"hi":0.449,"mid":0.191,"base_rate":0.161,"cv_auc":0.842,"top10_prec":0.653,"n":1470,"roleKey":"JobRole","deptKey":"Department","name":"Atlas Lab","fix":[{"k":"OverTime","type":"set","v":"No","from":["Yes"]},{"k":"BusinessTravel","type":"set","v":"Some Travel","from":["Frequent Traveller"]},{"k":"StockOptionLevel","type":"max","v":1},{"k":"Salary","type":"mul","v":1.1}]}),
+Object.assign({id:'industry'}, {"intercept":-0.16,"num":{"YearsAtCompany":{"mean":15.72,"scale":11.22,"coef":-0.168,"min":1,"max":51},"MonthlyIncome":{"mean":7345,"scale":2597,"coef":-0.003,"min":1226,"max":50030},"NumberOfPromotions":{"mean":0.8329,"scale":0.9953,"coef":-0.212,"min":0,"max":4},"DistanceFromHome":{"mean":49.99,"scale":28.15,"coef":0.244,"min":1,"max":99},"CompanyTenureInMonths":{"mean":55.72,"scale":24.98,"coef":-0.003,"min":2,"max":128}},"cat":{"JobRole":{"Education":0.05,"Finance":-0.049,"Healthcare":-0.037,"Media":-0.069,"Technology":-0.051},"WorkLifeBalance":{"Excellent":-0.703,"Fair":0.419,"Good":-0.462,"Poor":0.59},"JobSatisfaction":{"High":-0.259,"Low":0.166,"Medium":-0.229,"Very High":0.167},"PerformanceRating":{"Average":-0.252,"Below Average":0.037,"High":-0.235,"Low":0.295},"Overtime":{"No":-0.224,"Yes":0.069},"EducationLevel":{"Associate Degree":0.228,"Bachelors Degree":0.246,"High School":0.234,"Masters Degree":0.236,"PhD":-1.099},"JobLevel":{"Entry":0.989,"Mid":0.125,"Senior":-1.269},"CompanySize":{"Large":-0.104,"Medium":-0.118,"Small":0.067},"RemoteWork":{"No":0.679,"Yes":-0.834},"LeadershipOpportunities":{"No":0.013,"Yes":-0.168},"InnovationOpportunities":{"No":-0.015,"Yes":-0.14},"CompanyReputation":{"Excellent":-0.301,"Fair":0.129,"Good":-0.332,"Poor":0.348},"EmployeeRecognition":{"High":-0.038,"Low":0.002,"Medium":-0.009,"Very High":-0.111}},"catbase":{"JobRole":-0.029,"WorkLifeBalance":-0.092,"JobSatisfaction":-0.124,"PerformanceRating":-0.178,"Overtime":-0.129,"EducationLevel":0.168,"JobLevel":0.189,"CompanySize":-0.06,"RemoteWork":0.39,"LeadershipOpportunities":0.004,"InnovationOpportunities":-0.036,"CompanyReputation":-0.099,"EmployeeRecognition":-0.017},"catdef":{"JobRole":"Technology","WorkLifeBalance":"Good","JobSatisfaction":"High","PerformanceRating":"Average","Overtime":"No","EducationLevel":"Bachelors Degree","JobLevel":"Entry","CompanySize":"Medium","RemoteWork":"No","LeadershipOpportunities":"No","InnovationOpportunities":"No","CompanyReputation":"Good","EmployeeRecognition":"Low"},"medians":{"YearsAtCompany":13,"MonthlyIncome":7348,"NumberOfPromotions":1,"DistanceFromHome":50,"CompanyTenureInMonths":56},"hi":0.81,"mid":0.646,"base_rate":0.475,"cv_auc":0.787,"top10_prec":0.868,"n":74498,"roleKey":"JobRole","deptKey":"JobRole","name":"Industry survey","fix":[{"k":"Overtime","type":"set","v":"No","from":["Yes"]},{"k":"RemoteWork","type":"set","v":"Yes","from":["No"]},{"k":"WorkLifeBalance","type":"up","order":["Poor","Fair","Good","Excellent"]},{"k":"JobSatisfaction","type":"up","order":["Low","Medium","High","Very High"]},{"k":"EmployeeRecognition","type":"up","order":["Low","Medium","High","Very High"]},{"k":"LeadershipOpportunities","type":"set","v":"Yes","from":["No"]},{"k":"InnovationOpportunities","type":"set","v":"Yes","from":["No"]},{"k":"MonthlyIncome","type":"mul","v":1.1},{"k":"NumberOfPromotions","type":"up"},{"k":"DistanceFromHome","type":"min","v":10}]})
+];
+const MODELS_BY_ID={};
+MODELS.forEach(m=>{MODELS_BY_ID[m.id]=m;});
+
+/* ===== FIELD LABELS, REASON PHRASES, ADVICE, TALKING POINTS ===== */
+const FIELD_LABELS={DistanceFromHome:'Distance from home',Education:'Education level',EnvironmentSatisfaction:'Environment satisfaction',JobInvolvement:'Job involvement',JobLevel:'Job level',JobSatisfaction:'Job satisfaction',MonthlyIncome:'Monthly income',NumCompaniesWorked:'Companies worked',PercentSalaryHike:'Salary hike',PerformanceRating:'Performance rating',RelationshipSatisfaction:'Relationship satisfaction',StockOptionLevel:'Stock option level',TotalWorkingYears:'Total working years',TrainingTimesLastYear:'Training times last year',WorkLifeBalance:'Work-life balance',YearsAtCompany:'Years at company',YearsInCurrentRole:'Years in current role',YearsSinceLastPromotion:'Years since last promotion',YearsWithCurrManager:'Years with current manager',Salary:'Salary',NumberOfPromotions:'Promotions',CompanyTenureInMonths:'Tenure at company',BusinessTravel:'Business travel',Department:'Department',EducationField:'Education field',JobRole:'Job role',OverTime:'Overtime',Overtime:'Overtime',EducationLevel:'Education level',CompanySize:'Company size',RemoteWork:'Remote work',LeadershipOpportunities:'Leadership opportunities',InnovationOpportunities:'Innovation opportunities',CompanyReputation:'Company reputation',EmployeeRecognition:'Employee recognition'};
+const FIELD_UNITS={DistanceFromHome:'km',PercentSalaryHike:'%',YearsAtCompany:'yrs',YearsInCurrentRole:'yrs',YearsSinceLastPromotion:'yrs',YearsWithCurrManager:'yrs',TotalWorkingYears:'yrs',CompanyTenureInMonths:'mo',TrainingTimesLastYear:'×',NumberOfPromotions:'×',NumCompaniesWorked:'×'};
+const VALUE_LABELS={
+ Education:{1:'Below college',2:'College',3:'Bachelor',4:'Master',5:'Doctor'},
+ PerformanceRating:{3:'Excellent',4:'Outstanding'},
+ StockOptionLevel:{0:'None',1:'Level 1',2:'Level 2',3:'Level 3'},
+ JobLevel:{1:'Level 1',2:'Level 2',3:'Level 3',4:'Level 4',5:'Level 5',Entry:'Entry',Mid:'Mid',Senior:'Senior'},
+ WorkLifeBalance:{Poor:'Poor',Fair:'Fair',Good:'Good',Excellent:'Excellent',1:'Poor',2:'Fair',3:'Good',4:'Excellent'},
+ JobSatisfaction:{Low:'Low',Medium:'Medium',High:'High','Very High':'Very high',1:'Low',2:'Fair',3:'Good',4:'Excellent'},
+ CompanyReputation:{Poor:'Poor',Fair:'Fair',Good:'Good',Excellent:'Excellent'},
+ EmployeeRecognition:{Low:'Low',Medium:'Medium',High:'High','Very High':'Very high'},
+ BusinessTravel:{'Non-Travel':'No travel','Travel_Frequently':'Travels frequently','Travel_Rarely':'Travels rarely','Frequent Traveller':'Frequent traveller','No Travel':'No travel','Some Travel':'Some travel'},
+ RemoteWork:{No:'No',Yes:'Yes'},LeadershipOpportunities:{No:'No',Yes:'Yes'},InnovationOpportunities:{No:'No',Yes:'Yes'},
+ Overtime:{No:'No',Yes:'Yes'},OverTime:{No:'No',Yes:'Yes'},CompanySize:{Small:'Small',Medium:'Medium',Large:'Large'}
+};
+function valueLabel(field,v){
+ const map=VALUE_LABELS[field];
+ if(map&&Object.prototype.hasOwnProperty.call(map,v))return map[v];
+ return String(v).replace(/_/g,' ');
+}
+const REASON_NUM={Education:'Lower education level',EnvironmentSatisfaction:'Low satisfaction with the work environment',JobInvolvement:'Low job involvement',JobLevel:'Junior job level',JobSatisfaction:'Low job satisfaction',MonthlyIncome:'Lower monthly income',PercentSalaryHike:'Small recent salary hike',PerformanceRating:'Lower performance rating',RelationshipSatisfaction:'Low relationship satisfaction',StockOptionLevel:'Low stock option level',TotalWorkingYears:'Fewer total working years',TrainingTimesLastYear:'Little training last year',WorkLifeBalance:'Poor work-life balance',YearsAtCompany:'New to the company',YearsInCurrentRole:'Little time in current role',YearsWithCurrManager:'Little time with current manager',Salary:'Lower salary',NumberOfPromotions:'Few promotions so far',CompanyTenureInMonths:'Short company tenure'};
+const REASON_NUM_HIGH={DistanceFromHome:'Long distance from home',NumCompaniesWorked:'Has worked at many companies',PerformanceRating:'Higher performance rating',YearsAtCompany:'Longer time at the company',YearsInCurrentRole:'Longer time in the current role',YearsSinceLastPromotion:'Long gap since last promotion'};
+const REASON_NUM_LOW={DistanceFromHome:'Shorter distance from home',NumCompaniesWorked:'Has worked at fewer companies',YearsSinceLastPromotion:'Shorter gap since last promotion'};
+const REASON_CAT={
+ OverTime:{Yes:'Works regular overtime'},Overtime:{Yes:'Works regular overtime'},
+ BusinessTravel:{'Travel_Frequently':'Travels frequently for work','Frequent Traveller':'Travels frequently for work'},
+ WorkLifeBalance:{Poor:'Poor work-life balance',Fair:'Fair work-life balance'},
+ JobSatisfaction:{Low:'Low job satisfaction'},
+ PerformanceRating:{Low:'Low performance rating','Below Average':'Below-average performance rating'},
+ EducationLevel:{'High School':'Only high school education','Associate Degree':'Lower education level'},
+ JobLevel:{Entry:'Entry-level position'},
+ CompanyReputation:{Poor:'Company reputation rated poor',Fair:'Company reputation rated fair'},
+ EmployeeRecognition:{Low:'Low employee recognition'},
+ RemoteWork:{No:'Does not work remotely'},
+ LeadershipOpportunities:{No:'No leadership opportunities'},
+ InnovationOpportunities:{No:'No innovation opportunities'}
+};
+function reasonLabel(model,field,value){
+ if(model.num[field]){
+  if(model.num[field].coef>0)return REASON_NUM_HIGH[field]||'Higher '+(FIELD_LABELS[field]||field).toLowerCase();
+  return REASON_NUM_LOW[field]||REASON_NUM[field]||'Lower '+(FIELD_LABELS[field]||field).toLowerCase();
+ }
+ const byVal=REASON_CAT[field];
+ if(byVal&&Object.prototype.hasOwnProperty.call(byVal,value))return byVal[value];
+ if(field===model.roleKey&&field===model.deptKey)return 'Works in '+value;
+ if(field===model.roleKey)return 'Role: '+value;
+ if(field===model.deptKey)return 'Department: '+value;
+ if(field==='EducationField')return 'Studied '+value;
+ return (FIELD_LABELS[field]||field)+': '+valueLabel(field,value);
+}
+const ACTION_ADVICE={OverTime:'Cap overtime and rebalance workload',Overtime:'Cap overtime and rebalance workload',BusinessTravel:'Reduce required business travel',JobSatisfaction:'Improve job satisfaction with regular supportive check-ins',EnvironmentSatisfaction:'Improve the day-to-day work environment',WorkLifeBalance:'Protect work-life balance with flexible hours',JobInvolvement:'Give people more meaningful, involving work',RelationshipSatisfaction:'Improve relationships and team climate',StockOptionLevel:'Grant more stock options as a long-term reward',YearsSinceLastPromotion:'Keep gaps between promotions short',PercentSalaryHike:'Give larger salary hikes to people who earn them',MonthlyIncome:'Raise pay by 10%',Salary:'Raise pay by 10%',TrainingTimesLastYear:'Offer more training each year',DistanceFromHome:'Reduce commute distance with remote work or relocation support',RemoteWork:'Allow remote work',EmployeeRecognition:'Recognize people\'s work more often',LeadershipOpportunities:'Create leadership opportunities and clear growth paths',InnovationOpportunities:'Create room for innovation and new ideas',NumberOfPromotions:'Open up more promotion opportunities',CompanyTenureInMonths:'Support people early in their tenure'};
+function actionAdvice(action){return ACTION_ADVICE[action.k]||(action.type==='up'?'Improve '+(FIELD_LABELS[action.k]||action.k).toLowerCase():'Adjust '+(FIELD_LABELS[action.k]||action.k).toLowerCase());}
+const TALK_POINTS=[
+ {re:/overtime/i,text:'Ask how the workload feels lately and whether overtime is manageable.'},
+ {re:/promotion/i,text:'Discuss a path to promotion and what they need to get there.'},
+ {re:/satisfaction/i,text:'Ask what would make the work more enjoyable day to day.'},
+ {re:/work.?life/i,text:'Ask about work-life balance and what flexibility would help.'},
+ {re:/income|salary|hike/i,text:'Review pay against the market together, openly.'},
+ {re:/training/i,text:'Ask what training or learning would help them grow.'},
+ {re:/recognition/i,text:'Ask what recognition would mean to them.'},
+ {re:/relationship|manager/i,text:'Ask about the working relationship with their manager.'},
+ {re:/distance/i,text:'Ask about the commute and whether remote work would help.'},
+ {re:/travel/i,text:'Ask how business travel affects them and their family.'},
+ {re:/stock/i,text:'Explain stock options and other long-term rewards.'},
+ {re:/involvement/i,text:'Ask what kind of work would feel more meaningful to them.'},
+ {re:/leadership/i,text:'Ask about their leadership and growth ambitions.'},
+ {re:/innovation/i,text:'Ask what ideas they would like room to try.'},
+ {re:/remote/i,text:'Ask about their ideal remote-work setup.'},
+ {re:/performance/i,text:'Ask what support they need to do their best work.'},
+ {re:/./,text:'Check in on how settled and valued they feel in the team.'}
+];
+function buildTalkGuide(fields){
+ const points=[];const seen=new Set();
+ fields.forEach(f=>{const tp=TALK_POINTS.find(x=>x.re.test(f));if(tp&&!seen.has(tp.text)){seen.add(tp.text);points.push(tp.text);}});
+ if(points.length<3)points.push('Ask openly how things are going and what support they need.');
+ points.push('Thank them for their openness and agree on one small next step together.');
+ return points.slice(0,5);
+}
+const FORM_GROUPS=[
+ ['Role & background',['JobRole','Department','EducationField','EducationLevel','Education','JobLevel','CompanySize']],
+ ['Work style',['BusinessTravel','OverTime','Overtime','RemoteWork']],
+ ['Satisfaction & performance',['JobSatisfaction','EnvironmentSatisfaction','RelationshipSatisfaction','WorkLifeBalance','EmployeeRecognition','CompanyReputation','PerformanceRating']],
+ ['Pay & rewards',['MonthlyIncome','Salary','PercentSalaryHike','StockOptionLevel']],
+ ['Time & growth',['YearsAtCompany','YearsInCurrentRole','YearsSinceLastPromotion','YearsWithCurrManager','TotalWorkingYears','NumCompaniesWorked','NumberOfPromotions','TrainingTimesLastYear','CompanyTenureInMonths','DistanceFromHome','LeadershipOpportunities','InnovationOpportunities']]
+];
+/* ===== ENGINE (pure scoring functions) ===== */
+const sigmoid=z=>1/(1+Math.exp(-z));
+function numOf(model,k,v){const n=Number(v);return Number.isFinite(n)?n:(model.medians[k]!==undefined?model.medians[k]:model.num[k].min);}
+function scoreEmployee(model,emp){
+ let z=model.intercept;
+ for(const k in model.num){const f=model.num[k];z+=f.coef*(numOf(model,k,emp[k])-f.mean)/f.scale;}
+ for(const k in model.cat){const c=model.cat[k];const v=emp[k];z+=(c&&Object.prototype.hasOwnProperty.call(c,v))?c[v]:0;}
+ return sigmoid(z);
+}
+function trainedMetadataRows(){
+ const m=state.modelMetadata;
+ if(!m||!m.metrics)return '';
+ const recall=Number(m.metrics.recall),f1=Number(m.metrics.f1),auc=Number(m.metrics.roc_auc);
+ if(![recall,f1,auc].every(Number.isFinite))return '';
+ return '<dt>Trained algorithm</dt><dd>'+esc(m.algorithm||'')+'</dd><dt>Model version</dt><dd class="mono">'+esc(m.model_version||'')+'</dd><dt>Test recall</dt><dd class="mono">'+esc(recall.toFixed(3))+'</dd><dt>Test F1</dt><dd class="mono">'+esc(f1.toFixed(3))+'</dd><dt>Test ROC-AUC</dt><dd class="mono">'+esc(auc.toFixed(3))+'</dd>';
+}
+function metadataThresholds(){
+ const meta=state.modelMetadata;
+ const t=meta&&meta.risk_thresholds;
+ const low=t&&Number(t.low), medium=t&&Number(t.medium), high=t&&Number(t.high);
+ if(Number.isFinite(low)&&Number.isFinite(medium)&&Number.isFinite(high)&&low<medium&&medium<=high)return {low:low,medium:medium};
+ return {low:RISK_MEDIUM_BOUNDARY,medium:RISK_HIGH_BOUNDARY};
+}
+function riskLevel(p){const t=metadataThresholds();return p>=t.medium?'High':p>=t.low?'Medium':'Low';}
+function contributions(model,emp){
+ const out=[];
+ for(const k in model.num){const f=model.num[k];const v=numOf(model,k,emp[k]);out.push({field:k,kind:'num',value:v,c:f.coef*(v-f.mean)/f.scale});}
+ for(const k in model.cat){const c=model.cat[k];const v=emp[k];const b=(c&&Object.prototype.hasOwnProperty.call(c,v))?c[v]:0;out.push({field:k,kind:'cat',value:v,c:b-(model.catbase[k]||0)});}
+ return out;
+}
+function reasonsFor(model,emp,limit){
+ return contributions(model,emp).filter(x=>x.c>REASON_THRESHOLD).sort((a,b)=>b.c-a.c).slice(0,limit||TOP_LIST)
+  .map(x=>({field:x.field,kind:x.kind,value:x.value,c:x.c,label:reasonLabel(model,x.field,x.value)}));
+}
+function typicalEmployee(model){
+ const e={};
+ for(const k in model.num)e[k]=model.medians[k];
+ for(const k in model.cat)e[k]=model.catdef[k];
+ return e;
+}
+function applyAction(model,emp,action){
+ const e=Object.assign({},emp);const k=action.k;
+ switch(action.type){
+  case 'set':if(!action.from||action.from.indexOf(emp[k])!==-1)e[k]=action.v;break;
+  case 'min':e[k]=Math.min(action.v,numOf(model,k,emp[k]));break;
+  case 'max':e[k]=Math.max(action.v,numOf(model,k,emp[k]));break;
+  case 'mul':e[k]=Math.round(numOf(model,k,emp[k])*action.v);break;
+  case 'up':
+   if(action.order){const i=action.order.indexOf(emp[k]);if(i>-1&&i<action.order.length-1)e[k]=action.order[i+1];}
+   else{const f=model.num[k];if(f)e[k]=Math.min(numOf(model,k,emp[k])+1,f.max);}
+   break;
+ }
+ return e;
+}
+function applyAllActions(model,emp){return model.fix.reduce((e,a)=>applyAction(model,e,a),Object.assign({},emp));}
+function actionStats(model,emps,action){
+ if(!emps.length)return {helped:0,avgDrop:0,prevented:0};
+ let helped=0,dropSum=0;
+ for(const emp of emps){const idx=String(model.fix.indexOf(action));const d=employeeProbability(model,emp)-employeeProbability(model,emp,idx);dropSum+=d;if(d>=HELP_THRESHOLD)helped++;}
+ return {helped,avgDrop:dropSum/emps.length,prevented:dropSum};
+}
+function companyActions(model,emps){
+ return model.fix.map((a,i)=>({index:i,action:a,advice:actionAdvice(a),stats:actionStats(model,emps,a)}))
+  .filter(x=>x.stats.avgDrop>0).sort((a,b)=>b.stats.avgDrop-a.stats.avgDrop);
+}
+function overtimeKey(model){for(const k in model.cat){if(/overtime/i.test(k))return k;}return null;}
+const SELF_TESTS=[
+ {model:'ibm',label:'Typical employee',expected:0.024},
+ {model:'ibm',label:'Overtime = Yes',expected:0.0995,ot:true},
+ {model:'ibm',label:'All company actions applied',expected:0.0046,all:true},
+ {model:'atlas',label:'Typical employee',expected:0.0354},
+ {model:'atlas',label:'Overtime = Yes',expected:0.1529,ot:true},
+ {model:'atlas',label:'All company actions applied',expected:0.0354,all:true},
+ {model:'industry',label:'Typical employee',expected:0.5153},
+ {model:'industry',label:'Overtime = Yes',expected:0.5876,ot:true},
+ {model:'industry',label:'All company actions applied',expected:0.1049,all:true}
+];
+function runSelfTest(){
+ return SELF_TESTS.map(t=>{
+  const m=MODELS_BY_ID[t.model];let emp=typicalEmployee(m);let actual;
+  if(t.ot){emp[overtimeKey(m)]='Yes';actual=scoreEmployee(m,emp);}
+  else if(t.all){actual=scoreEmployee(m,applyAllActions(m,emp));}
+  else{actual=scoreEmployee(m,emp);}
+  return {model:t.model,modelName:m.name,label:t.label,expected:t.expected,actual,pass:Math.abs(actual-t.expected)<=SELF_TEST_TOLERANCE};
+ });
+}
+
+/* ===== STORE (every storage call wrapped in try/catch) ===== */
+function storageGet(key,fallback){
+ try{const raw=localStorage.getItem(PREFIX+key);return raw?JSON.parse(raw):fallback;}
+ catch(e){return fallback;}
+}
+function storageSet(key,value){
+ try{localStorage.setItem(PREFIX+key,JSON.stringify(value));return true;}
+ catch(e){toast('Storage is unavailable or full in this browser. Your changes may not be saved.','alert',8000);return false;}
+}
+function storageRemove(key){try{localStorage.removeItem(PREFIX+key);}catch(e){}}
+function accountKey(username){return 'account.'+username;}
+function loadAccount(username){return storageGet(accountKey(username),null);}
+function saveAccount(){
+ if(!state.user)return;
+ const payload=accountPayload();
+ storageSet(accountKey(state.user),payload);
+ if(state.api&&state.token){api('/me',{method:'PUT',body:JSON.stringify(payload)}).catch(()=>{});}
+}
+function logAction(text){
+ state.log.unshift({time:new Date().toISOString(),text});
+ if(state.log.length>LOG_LIMIT)state.log.length=LOG_LIMIT;
+ saveAccount();
+}
+
+/* ===== STATE ===== */
+const state={user:null,hash:null,created:null,modelId:'ibm',theme:'system',privacy:false,tourDone:false,customModels:[],models:{},log:[],scores:null,companyCache:null,token:null,api:false,modelReady:false,apiPromise:null,trainedRev:0,trainedScores:null,trainedPredictions:null,trainedAfter:null,wiSeq:0,whatifTrainedResult:null,lastScreen:null,modelMetadata:null,modelImportance:null,importanceSeq:0};
+const API_BASE='/api';
+function apiHeaders(){const h={'Content-Type':'application/json'};if(state.token)h.Authorization='Bearer '+state.token;return h;}
+async function api(path,opts){
+ const res=await fetch(API_BASE+path,Object.assign({headers:apiHeaders()},opts||{}));
+ let body=null;try{body=await res.json();}catch(e){body=null;}
+ if(!res.ok)throw new Error((body&&body.error)||'Request failed');
+ return body;
+}
+function accountPayload(){return {hash:state.hash,created:state.created,schemaVersion:SCHEMA_VERSION,theme:state.theme,privacy:state.privacy,tourDone:state.tourDone,modelId:state.modelId,customModels:state.customModels,models:state.models,log:state.log};}
+function currentModel(){return MODELS_BY_ID[state.modelId]||MODELS[0];}
+function allModels(){return MODELS.concat(state.customModels);}
+function registerCustomModels(){state.customModels.forEach(m=>{MODELS_BY_ID[m.id]=m;});}
+function modelData(){const m=currentModel();if(!state.models[m.id])state.models[m.id]={employees:[],scenarios:[],snapshots:[]};return state.models[m.id];}
+function employees(){return modelData().employees;}
+function scenarios(){return modelData().scenarios;}
+function snapshots(){return modelData().snapshots;}
+function invalidateCache(){state.scores=null;state.companyCache=null;}
+function employeeProbability(model,emp,scenarioKey){
+ if(state.api&&model.id==='ibm'&&emp&&emp.id){
+  if(scenarioKey==null&&state.trainedScores&&state.trainedScores[emp.id]!=null)return state.trainedScores[emp.id];
+  if(scenarioKey!=null&&state.trainedAfter&&state.trainedAfter[scenarioKey]&&state.trainedAfter[scenarioKey][emp.id]!=null)return state.trainedAfter[scenarioKey][emp.id];
+ }
+ if(scenarioKey==='all')return scoreEmployee(model,applyAllActions(model,emp));
+ if(scenarioKey!=null&&model.fix&&model.fix[scenarioKey])return scoreEmployee(model,applyAction(model,emp,model.fix[scenarioKey]));
+ return scoreEmployee(model,emp);
+}
+function refreshTrainedScores(){
+ if(!state.api||currentModel().id!=='ibm')return;
+ const model=currentModel();
+ const list=employees();
+ const rev=++state.trainedRev;
+  if(!list.length){state.trainedScores={};state.trainedPredictions={};state.trainedAfter={};invalidateCache();return;}
+ const rows=[];const tags=[];
+ list.forEach(emp=>{
+  rows.push(emp);tags.push({id:emp.id,key:'base'});
+  if(list.length<=800){
+   model.fix.forEach((action,i)=>{rows.push(applyAction(model,emp,action));tags.push({id:emp.id,key:String(i)});});
+   rows.push(applyAllActions(model,emp));tags.push({id:emp.id,key:'all'});
+  }
+ });
+ api('/predict/batch',{method:'POST',body:JSON.stringify({employees:rows})}).then(out=>{
+  if(rev!==state.trainedRev||currentModel().id!=='ibm')return;
+   const scores={};const labels={};const after={};
+  (out.predictions||[]).forEach((pred,i)=>{
+   const tag=tags[i];
+    if(tag.key==='base'){scores[tag.id]=pred.attrition_probability;labels[tag.id]=pred.prediction;}
+   else{(after[tag.key]=after[tag.key]||{})[tag.id]=pred.attrition_probability;}
+  });
+   state.trainedScores=scores;state.trainedPredictions=labels;state.trainedAfter=after;invalidateCache();
+  if(state.user)renderView();
+ }).catch(()=>{});
+}
+function scoredEmployees(){
+ if(!state.scores||state.scores.length!==employees().length){
+  const m=currentModel();
+  state.scores=employees().map(emp=>employeeProbability(m,emp));
+ }
+ return employees().map((emp,i)=>({emp,i,p:state.scores[i],lvl:riskLevel(state.scores[i])}));
+}
+function companyStats(){
+ if(state.companyCache)return state.companyCache;
+ const sc=scoredEmployees();
+ const avg=sc.length?sc.reduce((s,x)=>s+x.p,0)/sc.length:0;
+ const high=sc.filter(x=>x.lvl==='High').length;
+  const medium=sc.filter(x=>x.lvl==='Medium').length;
+  const low=sc.filter(x=>x.lvl==='Low').length;
+ const expected=sc.reduce((s,x)=>s+x.p,0);
+  state.companyCache={count:sc.length,avg,high,medium,low,expected};
+ return state.companyCache;
+}
+function displayName(emp,i){return state.privacy?('Employee '+String(i+1).padStart(3,'0')):emp.name;}
+function findEmp(id){return employees().find(e=>e.id===id)||null;}
+function addEmployees(list,verb){
+ modelData().employees.push.apply(modelData().employees,list);
+ invalidateCache();saveAccount();
+ logAction((verb||'Added')+' '+list.length+' employee'+(list.length===1?'':'s'));
+ refreshTrainedScores();
+}
+function deleteEmployeesById(ids){
+ const set=new Set(ids);const removed=[];const keep=[];
+ employees().forEach((e,i)=>{if(set.has(e.id))removed.push({idx:i,emp:e});else keep.push(e);});
+ modelData().employees=keep;
+ invalidateCache();saveAccount();refreshTrainedScores();
+ logAction('Deleted '+removed.length+' employee'+(removed.length===1?'':'s'));
+ return removed;
+}
+function restoreEmployees(removed){
+ const all=employees().map((emp,i)=>({idx:i,emp}));
+ removed.forEach(r=>all.push(r));
+ all.sort((a,b)=>a.idx-b.idx);
+ modelData().employees=all.map(x=>x.emp);
+ invalidateCache();saveAccount();refreshTrainedScores();
+ logAction('Restored '+removed.length+' employee'+(removed.length===1?'':'s'));
+}
+
+/* ===== UI HELPERS ===== */
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+function esc(s){return String(s===null||s===undefined?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtPct(p,d){return (p*100).toFixed(d===undefined?1:d)+'%';}
+function fmtInt(n){return Math.round(n).toLocaleString('en-US');}
+function fmtMoney(n){return '$'+Math.round(n).toLocaleString('en-US');}
+function fmtDate(iso){const d=new Date(iso);return isNaN(d)?String(iso):d.toLocaleString('en-US',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtDateShort(iso){const d=new Date(iso);return isNaN(d)?String(iso):d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+function trunc(s,n){s=String(s);return s.length>n?s.slice(0,n-1)+'…':s;}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'model';}
+function debounce(fn,ms){let t;return function(){const a=arguments,c=this;clearTimeout(t);t=setTimeout(()=>fn.apply(c,a),ms);};}
+function fmtField(m,k,v){
+ if(v===undefined||v===null)return '—';
+ if(m.num[k]){const n=Number(v);return (k==='MonthlyIncome'||k==='Salary')?fmtMoney(n):n.toLocaleString('en-US');}
+ return valueLabel(k,v);
+}
+const ICONS={
+ home:'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5M9 21v-6h6v6',
+ users:'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M15 3.1a4 4 0 0 1 0 7.8',
+ 'user-plus':'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6',
+ flask:'M9 3h6M10 3v5.2L4.6 17.5A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.7-3.5L14 8.2V3M7.5 14.5h9',
+ chart:'M5 21v-8M12 21V4M19 21v-8M3 21h18',
+ target:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 2v2M12 20v2M2 12h2M20 12h2',
+ shield:'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+ trend:'M3 17l6-6 4 4 8-8M15 7h6v6',
+ settings:'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M19.1 4.9 16.9 7.1M7.1 16.9l-2.2 2.2',
+ search:'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3',
+ sun:'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 1v2M12 21v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4',
+ moon:'M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z',
+ eye:'M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
+ 'eye-off':'M17.9 17.9A10.4 10.4 0 0 1 12 19c-7 0-11-7-11-7a19.8 19.8 0 0 1 5-5.9M9.9 4.2A9.9 9.9 0 0 1 12 5c7 0 11 7 11 7a19.8 19.8 0 0 1-3.2 4.3M1 1l22 22M9.9 9.9a3 3 0 1 0 4.2 4.2',
+ x:'M18 6 6 18M6 6l12 12',
+ check:'M20 6 9 17l-5-5',
+ alert:'M12 3 2 20h20L12 3zM12 10v4M12 17h.01',
+ trash:'M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 11v6M14 11v6',
+ download:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+ upload:'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12',
+ plus:'M12 5v14M5 12h14',
+ 'chev-l':'M15 18l-6-6 6-6',
+ 'chev-r':'M9 18l6-6-6-6',
+ printer:'M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v7H6z',
+ info:'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01',
+ undo:'M3 7v6h6M21 17a9 9 0 1 0-2.6-6.4L21 13',
+ dots:'M12 5h.01M12 12h.01M12 19h.01',
+ 'arrow-up':'M12 19V5M5 12l7-7 7 7',
+ 'arrow-down':'M12 5v14M19 12l-7 7-7-7',
+ save:'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8',
+ user:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
+ logout:'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+ lock:'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4'
+};
+function icon(name,size){size=size||18;return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="'+(ICONS[name]||ICONS.info)+'"/></svg>';}
+/* ===== COMPONENTS ===== */
+function toast(msg,type,ms,action){
+ type=type||'check';ms=ms===undefined?4000:ms;
+ const el=document.createElement('div');
+ el.className='toast t-'+type;el.setAttribute('role','status');
+ el.innerHTML=icon(type==='alert'?'alert':type==='undo'?'undo':'check',16)+'<span>'+esc(msg)+'</span>';
+ if(action){
+  const b=document.createElement('button');b.className='toast-btn';b.type='button';b.textContent=action.label;
+  b.addEventListener('click',()=>{action.fn();dismiss();});
+  el.appendChild(b);
+ }
+ $('#toasts').appendChild(el);
+ function dismiss(){el.classList.add('out');setTimeout(()=>el.remove(),200);}
+ if(ms)setTimeout(dismiss,ms);
+}
+let modalResolve=null;
+function resolveModal(v){$('#modal-root').innerHTML='';if(modalResolve){const r=modalResolve;modalResolve=null;r(v);}}
+function openModal(html){
+ $('#modal-root').innerHTML='<div class="modal-backdrop" data-action="modal-resolve" data-v="0"></div><div class="modal card" role="dialog" aria-modal="true">'+html+'</div>';
+ trapFocus($('#modal-root .modal'));
+}
+function confirmDialog(message,title,danger){
+ return new Promise(res=>{
+  modalResolve=res;
+  openModal('<h3>'+esc(title||'Please confirm')+'</h3><p class="muted">'+esc(message)+'</p><div class="quick" style="margin-top:14px"><button class="btn" data-action="modal-resolve" data-v="0">Cancel</button><button class="btn '+(danger===false?'btn-primary':'btn-danger')+'" data-action="modal-resolve" data-v="1">'+(danger===false?'OK':'Delete')+'</button></div>');
+ });
+}
+function trapFocus(container){
+ if(!container)return;
+ const sel='button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+ const list=()=>Array.from(container.querySelectorAll(sel)).filter(el=>!el.disabled);
+ const first=list()[0];if(first)first.focus();
+ container.addEventListener('keydown',e=>{
+  if(e.key!=='Tab')return;
+  const l=list();if(!l.length)return;
+  const f=l[0],last=l[l.length-1];
+  if(e.shiftKey&&document.activeElement===f){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();f.focus();}
+ });
+}
+function openDrawer(html,label){
+ $('#drawer-root').innerHTML='<div class="drawer-backdrop" data-action="drawer-close"></div><aside class="drawer" role="dialog" aria-modal="true" aria-label="'+esc(label||'Details')+'">'+html+'</aside>';
+ document.body.style.overflow='hidden';
+ trapFocus($('#drawer-root .drawer'));
+ $('#drawer-root .drawer').scrollTop=0;
+}
+function closeDrawer(){$('#drawer-root').innerHTML='';document.body.style.overflow='';}
+function switchHTML(id,on,label){return '<button type="button" class="switch" id="'+id+'" role="switch" aria-checked="'+(on?'true':'false')+'" data-action="toggle-switch" data-target="'+id+'" aria-label="'+esc(label)+'"><span class="knob"></span></button>';}
+function riskBadge(p){
+ const lvl=riskLevel(p);
+ const cls=lvl==='High'?'r-high':lvl==='Medium'?'r-med':'r-low';
+ const ic=lvl==='High'?'alert':lvl==='Medium'?'info':'check';
+ return '<span class="badge '+cls+'">'+icon(ic,12)+'<b>'+lvl+'</b><span>'+fmtPct(p)+'</span></span>';
+}
+function infoTip(text){return '<button type="button" class="info" data-tip="'+esc(text)+'" aria-label="More information">i</button>';}
+function kpi(label,num,sub){return '<div class="kpi"><div class="kpi-label">'+esc(label)+'</div><div class="kpi-num">'+num+'</div><div class="kpi-sub">'+esc(sub)+'</div></div>';}
+function emptyHTML(title,text,btns){
+ return '<div class="card empty">'+icon('users',34)+'<h2>'+esc(title)+'</h2><p class="muted" style="max-width:52ch">'+esc(text)+'</p><div class="empty-actions">'+
+  btns.map(b=>'<button class="btn '+(b.primary?'btn-primary':'')+'" data-action="'+b.action+'"'+(b.to?' data-to="'+b.to+'"':'')+(b.tab?' data-tab="'+b.tab+'"':'')+'>'+esc(b.label)+'</button>').join('')+'</div></div>';
+}
+function skel(){return '<div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div>';}
+function gaugeSVG(p){
+ const lvl=riskLevel(p);
+ const color=lvl==='High'?'var(--red)':lvl==='Medium'?'var(--amber)':'var(--green)';
+ const cx=110,cy=100,r=78,W=220,H=118;
+ const frac=Math.max(0,Math.min(1,p));
+ const a1=Math.PI*(1-frac);
+ const x1=cx+r*Math.cos(a1),y1=cy-r*Math.sin(a1);
+ return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" class="gauge" role="img" aria-label="Risk gauge: '+lvl+', '+fmtPct(p)+'">'
+  +'<title>Risk '+fmtPct(p)+' — '+lvl+' risk</title>'
+  +'<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+(cx+r)+' '+cy+'" fill="none" stroke="var(--line-soft)" stroke-width="14" stroke-linecap="round"/>'
+  +'<path d="M '+(cx-r)+' '+cy+' A '+r+' '+r+' 0 0 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+'" fill="none" stroke="'+color+'" stroke-width="14" stroke-linecap="round"/>'
+  +'<text x="'+(cx-r)+'" y="'+(cy+20)+'" class="g-tick" text-anchor="middle">0%</text>'
+  +'<text x="'+(cx+r)+'" y="'+(cy+20)+'" class="g-tick" text-anchor="middle">100%</text>'
+  +'<text x="'+cx+'" y="'+(cy-34)+'" class="g-val" text-anchor="middle" fill="'+color+'">'+fmtPct(p)+'</text>'
+  +'<text x="'+cx+'" y="'+(cy-14)+'" class="g-lvl" text-anchor="middle">'+lvl+' risk</text>'
+  +'</svg>';
+}
+function drawBarChart(sel,data,opts){
+ opts=opts||{};
+ const el=$(sel);if(!el)return;
+ if(!data.length){el.innerHTML='<p class="muted">No data yet.</p>';return;}
+ const W=560,H=260,padL=48,padB=64,padT=18,padR=8;
+ const max=Math.max.apply(null,data.map(d=>d.value).concat([0.0001]));
+ const iw=W-padL-padR,ih=H-padT-padB,bw=iw/data.length;
+ let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="'+esc(opts.alt||'Bar chart')+'"><title>'+esc(opts.alt||'Bar chart')+'</title>';
+ for(let i=0;i<=4;i++){
+  const v=max*i/4,y=padT+ih*(1-i/4);
+  s+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" class="c-grid"/>';
+  s+='<text x="'+(padL-6)+'" y="'+(y+4)+'" class="c-tick" text-anchor="end">'+(opts.fmt?opts.fmt(v):v.toFixed(2))+'</text>';
+ }
+ data.forEach((d,i)=>{
+  const h=ih*(d.value/max);
+  const x=padL+i*bw+bw*0.16,y=padT+ih-h,w=bw*0.68;
+  const val=opts.fmt?opts.fmt(d.value):d.value.toFixed(2);
+  s+='<g tabindex="0" role="img" aria-label="'+esc(d.label)+': '+esc(val)+'"><title>'+esc(d.label)+': '+esc(val)+'</title>'
+   +'<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+(d.color||'var(--accent)')+'" class="c-bar"/>';
+  if(h>14)s+='<text x="'+(x+w/2).toFixed(1)+'" y="'+(y-5).toFixed(1)+'" class="c-tick" text-anchor="middle">'+esc(val)+'</text>';
+  s+='<text x="'+(x+w/2).toFixed(1)+'" y="'+(H-padB+16)+'" class="c-lab" text-anchor="end" transform="rotate(-35 '+(x+w/2).toFixed(1)+' '+(H-padB+16)+')">'+esc(trunc(d.label,16))+'</text></g>';
+ });
+ s+='</svg>';
+ el.innerHTML=s;
+}
+function drawHistogram(sel,ps){
+ const bins=new Array(HISTOGRAM_BINS).fill(0);
+ ps.forEach(p=>{const i=Math.min(HISTOGRAM_BINS-1,Math.floor(p*HISTOGRAM_BINS));bins[i]++;});
+ drawBarChart(sel,bins.map((c,i)=>({label:(i*10)+'–'+(i*10+10)+'%',value:c,color:'var(--accent)'})),{fmt:v=>String(Math.round(v)),alt:'Histogram of the risk distribution across employees, 10 bars from 0% to 100% risk'});
+}
+function drawLineChart(sel,pts){
+ const el=$(sel);if(!el)return;
+ if(!pts.length){el.innerHTML='<p class="muted">No snapshots yet.</p>';return;}
+ const W=560,H=240,padL=48,padB=56,padT=16,padR=10;
+ const max=Math.max.apply(null,[0.2].concat(pts.map(p=>p.value)));
+ const iw=W-padL-padR,ih=H-padT-padB;
+ const X=i=>padL+iw*(pts.length===1?0.5:i/(pts.length-1));
+ const Y=v=>padT+ih*(1-v/max);
+ let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="Line chart of average risk over time"><title>Average risk over time</title>';
+ for(let i=0;i<=4;i++){
+  const v=max*i/4,y=Y(v);
+  s+='<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" class="c-grid"/>';
+  s+='<text x="'+(padL-6)+'" y="'+(y+4)+'" class="c-tick" text-anchor="end">'+fmtPct(v,0)+'</text>';
+ }
+ s+='<polyline points="'+pts.map((p,i)=>X(i).toFixed(1)+','+Y(p.value).toFixed(1)).join(' ')+'" class="c-line"/>';
+ pts.forEach((p,i)=>{
+  s+='<g tabindex="0" role="img" aria-label="'+esc(p.label)+': '+fmtPct(p.value)+'"><title>'+esc(p.label)+': '+fmtPct(p.value)+'</title>'
+   +'<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.value).toFixed(1)+'" r="4.5" class="c-dot"/></g>';
+  s+='<text x="'+X(i).toFixed(1)+'" y="'+(H-padB+18)+'" class="c-lab" text-anchor="end" transform="rotate(-35 '+X(i).toFixed(1)+' '+(H-padB+18)+')">'+esc(p.label)+'</text>';
+ });
+ s+='</svg>';
+ el.innerHTML=s;
+}
+function changeChip(a,b){
+ const d=(b-a)*100;
+ if(d>0.05)return '<span class="chip chip-bad">'+icon('arrow-up',12)+' +'+d.toFixed(1)+' pp</span>';
+ if(d<-0.05)return '<span class="chip chip-good">'+icon('arrow-down',12)+' −'+Math.abs(d).toFixed(1)+' pp</span>';
+ return '<span class="chip">'+icon('info',12)+' no change</span>';
+}
+function reasonsDiff(m,base,mod){
+ const a=reasonsFor(m,base,TOP_DETAIL).map(r=>r.field);
+ const b=reasonsFor(m,mod,TOP_DETAIL).map(r=>r.field);
+ const appeared=b.filter(f=>a.indexOf(f)===-1);
+ const resolved=a.filter(f=>b.indexOf(f)===-1);
+ let out='';
+ if(appeared.length)out+='<p><b class="c-red">Appeared:</b> '+appeared.map(f=>esc(reasonLabel(m,f,mod[f]))).join('; ')+'</p>';
+ if(resolved.length)out+='<p><b class="c-green">Resolved:</b> '+resolved.map(f=>esc(reasonLabel(m,f,base[f]))).join('; ')+'</p>';
+ if(!out)out='<p class="muted">No change in the top risk reasons.</p>';
+ return out;
+}
+/* ===== SCREENS & SHELL ===== */
+const SCREENS=[
+ {id:'dashboard',name:'Dashboard',icon:'home'},
+ {id:'employees',name:'Employees',icon:'users'},
+ {id:'add',name:'Add / Import',icon:'user-plus'},
+ {id:'whatif',name:'What-if',icon:'flask'},
+ {id:'insights',name:'Insights',icon:'chart'},
+ {id:'planner',name:'Planner',icon:'target'},
+ {id:'policy',name:'Policy simulator',icon:'shield'},
+ {id:'trends',name:'Trends',icon:'trend'},
+ {id:'settings',name:'Settings',icon:'settings'}
+];
+const MOBILE_SCREENS=['dashboard','employees','add','whatif','insights'];
+const VIEWS={};
+function currentScreen(){
+ const id=(location.hash||'').replace(/^#\/?/,'').split('?')[0];
+ return SCREENS.some(s=>s.id===id)?id:'dashboard';
+}
+function renderView(){
+ const el=$('#view');if(!el)return;
+ const next=currentScreen();
+ const order=SCREENS.map(s=>s.id);
+ const changed=!!state.lastScreen&&state.lastScreen!==next;
+ const dir=order.indexOf(next)>=order.indexOf(state.lastScreen||next)?1:-1;
+ state.lastScreen=next;
+ const v=VIEWS[next]||VIEWS.dashboard;
+ el.innerHTML=v.render();
+ if(changed){
+  el.classList.remove('slide-next','slide-prev');
+  void el.offsetWidth;
+  el.classList.add(dir<0?'slide-prev':'slide-next');
+ }
+ if(v.init)v.init();
+ if(next==='whatif')requestTrainedWhatif();
+ updateNav();
+ const count=$('#sidebar-count');
+ if(count)count.textContent=employees().length+' employees';
+}
+function renderApp(){
+ $('#drawer-root').innerHTML='';$('#modal-root').innerHTML='';modalResolve=null;
+ if(paletteOpen)closePalette();
+ if(!state.user){$('#app').innerHTML=viewLogin();return;}
+ $('#app').innerHTML=shellHTML();
+ renderView();
+}
+function updateNav(){
+ const id=currentScreen();
+ $$('.nav-item[data-screen]').forEach(a=>{
+  const on=a.dataset.screen===id;
+  a.classList.toggle('active',on);
+  if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+ });
+}
+function moreMenuHTML(){
+ const others=SCREENS.filter(s=>MOBILE_SCREENS.indexOf(s.id)===-1);
+ return '<div class="more-wrap"><button class="nav-item" data-action="more-menu" aria-haspopup="true" aria-expanded="false">'+icon('dots',18)+'<span>More</span></button>'
+  +'<div class="menu" id="more-menu" hidden>'+others.map(s=>'<a class="menu-item" href="#/'+s.id+'">'+icon(s.icon,15)+' '+esc(s.name)+'</a>').join('')+'</div></div>';
+}
+function shellHTML(){
+ const m=currentModel();
+ const opts=allModels().map(x=>'<option value="'+esc(x.id)+'"'+(x.id===state.modelId?' selected':'')+'>'+esc(x.name)+'</option>').join('');
+ return '<div class="shell">'
+  +'<aside class="sidebar"><div class="brand"><span class="brand-mark" aria-hidden="true">AV</span><span><span class="brand-name">Attrivue</span><span class="brand-caption">Attrition Predictor</span></span></div>'
+  +'<nav class="nav" aria-label="Screens">'+SCREENS.map(s=>'<a href="#/'+s.id+'" class="nav-item" data-screen="'+s.id+'">'+icon(s.icon,18)+'<span>'+esc(s.name)+'</span></a>').join('')+'</nav>'
+  +'<div class="sidebar-foot"><span class="muted small">Model: <b>'+esc(m.name)+'</b></span><span class="muted small" id="sidebar-count">'+employees().length+' employees</span></div></aside>'
+  +'<div class="main"><header class="topbar">'
+  +'<label class="tb-field"><span class="muted small">Model</span><select id="model-select" class="input input-sm" aria-label="Model">'+opts+'</select></label>'
+  +'<button class="tb-icon" data-action="about-model" aria-label="About this model" title="About this model">'+icon('info',16)+'</button>'
+  +'<span class="tb-spacer"></span>'
+  +'<button class="tb-icon" data-action="open-palette" aria-label="Search, Ctrl or Cmd K">'+icon('search',16)+'<kbd>'+(isMac?'⌘K':'Ctrl K')+'</kbd></button>'
+  +'<button class="tb-icon" data-action="toggle-privacy" aria-pressed="'+state.privacy+'" title="Privacy mode">'+icon(state.privacy?'eye-off':'eye',16)+'<span class="tb-label">Privacy</span></button>'
+  +'<button class="tb-icon" data-action="toggle-theme" aria-label="Toggle light and dark mode">'+icon(isDark()?'sun':'moon',16)+'</button>'
+  +'<div class="user-menu"><button class="tb-icon" id="user-btn" data-action="toggle-usermenu" aria-haspopup="true" aria-expanded="false">'+icon('user',16)+'<span class="tb-label">'+esc(state.user)+'</span></button>'
+  +'<div class="menu" id="user-menu" hidden><div class="menu-head">Signed in as <b>'+esc(state.user)+'</b></div>'
+  +'<button class="menu-item" data-action="goto" data-to="settings">'+icon('settings',15)+' Settings</button>'
+  +'<button class="menu-item" data-action="signout">'+icon('logout',15)+' Sign out</button></div></div>'
+  +'</header><main id="view" class="view" tabindex="-1"></main></div></div>'
+  +'<nav class="bottombar" aria-label="Screens">'+MOBILE_SCREENS.map(id=>{const s=SCREENS.find(x=>x.id===id);return '<a href="#/'+id+'" class="nav-item" data-screen="'+id+'">'+icon(s.icon,18)+'<span>'+esc(s.name)+'</span></a>';}).join('')+moreMenuHTML()+'</nav>';
+}
+
+/* ===== LOGIN / SIGN UP ===== */
+let loginViewMode='signin';
+function viewLogin(){
+ const creating=loginViewMode==='signup';
+ return '<div class="login-wrap"><section class="login-art" aria-label="Attrivue overview">'
+ +'<div class="login-visuals" aria-hidden="true"><div class="login-demo login-demo-risk"><div class="login-demo-label">Average risk</div><div class="login-demo-number">18.4%</div><svg class="login-spark" viewBox="0 0 240 48"><polyline points="0,39 30,32 60,36 90,20 120,25 150,10 180,17 210,2 240,7"/></svg></div>'
+ +'<div class="login-demo login-demo-attn"><div class="login-demo-label">Needs attention</div><div class="login-attn-row"><span>Avery Chen</span><span class="login-mini-risk">High 71%</span></div><div class="login-attn-row"><span>Sam Rivera</span><span class="login-mini-risk medium">Medium 58%</span></div><div class="login-attn-row"><span>Jordan Blake</span><span class="login-mini-risk low">Low 9%</span></div></div>'
+ +'<div class="login-demo login-demo-reasons"><div class="login-demo-label">Top reasons</div><div class="login-reason">Regular overtime<div class="login-reason-bar"><i style="width:86%"></i></div></div><div class="login-reason">Long gap since promotion<div class="login-reason-bar"><i style="width:62%"></i></div></div><div class="login-reason">Low job satisfaction<div class="login-reason-bar"><i style="width:41%"></i></div></div></div></div>'
+ +'<div class="login-copy"><div class="login-kicker">ATTRIVUE</div><h1>Understand who is at risk of leaving, and what would actually help.</h1><p>Plain-language risk explanations, what-if simulations and ranked company actions. Everything runs locally in your browser; nothing is uploaded.</p></div></section>'
+ +'<section class="login-panel"><div class="login-panel-inner"><div class="login-brand"><span class="login-mark">AV</span><span><strong>Attrivue</strong><small>Attrition Predictor</small></span></div><div class="login-tabs" role="tablist"><button class="login-tab'+(!creating?' active':'')+'" type="button" role="tab" aria-selected="'+(!creating)+'" data-action="login-tab" data-mode="signin">Log in</button><button class="login-tab'+(creating?' active':'')+'" type="button" role="tab" aria-selected="'+creating+'" data-action="login-tab" data-mode="signup">Create account</button></div>'
+  +'<div class="card login-card"><h1>'+(creating?'Create your account':'Welcome back')+'</h1><p class="muted">'+(creating?'Set up a private workspace in seconds.':'Log in to your private browser workspace.')+'</p>'
+  +'<form id="login-form" novalidate>'
+  +'<input type="hidden" name="mode" value="'+loginViewMode+'"><label>Username<input class="input" name="username" autocomplete="username" placeholder="Your username"></label>'
+  +'<label>Password<span class="pw-wrap"><input class="input" name="password" type="password" autocomplete="'+(creating?'new-password':'current-password')+'" placeholder="At least 4 characters"><button type="button" class="pw-toggle" data-action="toggle-pw" aria-label="Show password">'+icon('eye',16)+'</button></span></label>'
+  +'<div id="login-error" class="form-error" role="alert" hidden></div>'
+  +'<button class="btn btn-primary" style="width:100%" type="submit">'+(creating?'Create account':'Log in')+'</button>'
+  +'</form>'
+  +'<p class="login-note">'+icon('lock',13)+' Passwords are hashed with SHA-256. Your data stays in this browser.</p></div></div></section></div>';
+}
+async function hashPassword(pw){
+ const data=new TextEncoder().encode('attrition-predictor:'+pw);
+ if(crypto.subtle&&crypto.subtle.digest){
+  try{
+   const buf=await crypto.subtle.digest('SHA-256',data);
+   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){/* fall through to local hash */}
+ }
+ let h1=0x811c9dc5,h2=0x01000193;const s='attrition-predictor:'+pw;
+ for(let i=0;i<s.length;i++){h1=Math.imul(h1^s.charCodeAt(i),16777619)>>>0;h2=Math.imul(h2^s.charCodeAt(i),2166136261)>>>0;}
+ return 'x'+h1.toString(16)+h2.toString(16);
+}
+function setLoginLoading(form,on){form.querySelectorAll('button').forEach(b=>{b.disabled=on;b.classList.toggle('loading',on);});}
+async function handleLogin(form){
+ const fd=new FormData(form);
+ const username=(fd.get('username')||'').toString().trim();
+ const password=(fd.get('password')||'').toString();
+ const mode=fd.get('mode')||'signin';
+ const err=$('#login-error');
+ const show=m=>{err.textContent=m;err.hidden=false;};
+ if(!username){show('Please enter a username.');return;}
+ if(password.length<4){show('Password must be at least 4 characters.');return;}
+ err.hidden=true;
+ setLoginLoading(form,true);
+ const hash=await hashPassword(password);
+  if(state.apiPromise)await state.apiPromise;
+ if(state.api){
+  try{
+   const out=await api(mode==='signup'?'/signup':'/login',{method:'POST',body:JSON.stringify({username,passwordHash:hash})});
+   state.token=out.token;storageSet('token',out.token);
+   signIn(username,Object.assign({hash:hash},out.account||{}));
+   if(mode==='signup')toast('Account created — welcome!');
+   return;
+  }catch(e){setLoginLoading(form,false);show(e.message);return;}
+ }
+ const rec=loadAccount(username);
+ if(mode==='signup'){
+  if(rec){setLoginLoading(form,false);show('That username is already taken. Try signing in instead.');return;}
+  const fresh={hash:hash,created:new Date().toISOString(),schemaVersion:SCHEMA_VERSION,theme:'system',privacy:false,tourDone:false,modelId:'ibm',customModels:[],models:{},log:[]};
+  storageSet(accountKey(username),fresh);
+  signIn(username,fresh);
+  toast('Account created — welcome!');
+ }else{
+  if(!rec){setLoginLoading(form,false);show('No account found for that username. Create one first.');return;}
+  if(rec.hash!==hash){setLoginLoading(form,false);show('That password is not correct.');return;}
+  signIn(username,rec);
+ }
+}
+function signIn(username,rec){
+ state.user=username;state.hash=rec.hash;state.created=rec.created;
+ state.theme=rec.theme||'system';state.privacy=!!rec.privacy;state.tourDone=!!rec.tourDone;
+ state.modelId=rec.modelId||'ibm';state.customModels=rec.customModels||[];state.models=rec.models||{};state.log=rec.log||[];
+ registerCustomModels();
+ invalidateCache();applyTheme();storageSet('session',username);renderApp();refreshTrainedScores();
+ if(!state.tourDone)showTour();
+}
+function signOut(){
+ if(state.api&&state.token){api('/logout',{method:'POST'}).catch(()=>{});}
+ storageRemove('session');storageRemove('token');
+ state.user=null;state.hash=null;state.token=null;state.models={};state.log=[];state.customModels=[];state.scores=null;state.companyCache=null;
+ renderApp();
+}
+
+/* ===== DASHBOARD ===== */
+function workspaceBanner(model){
+ return '<section class="workspace-banner" aria-label="Attrivue workspace">'
+  +'<span class="eyebrow">Attrition Predictor / '+esc(model.name)+'</span>'
+  +'<h1>Attrivue</h1>'
+  +'<p>Understand who may need support, why, and which changes are worth exploring.</p></section>';
+}
+function modelPerformancePanel(){
+ const meta=state.modelMetadata;
+ if(currentModel().id!=='ibm')return '<section class="card"><h3>Model performance</h3><p class="ml-status">The trained ML pipeline currently supports the IBM HR model. Select IBM HR to view its metadata and measured test-set metrics.</p></section>';
+ const valid=meta&&meta.metrics&&['accuracy','precision','recall','f1','roc_auc'].every(k=>Number.isFinite(Number(meta.metrics[k])));
+ let content='';
+ if(valid){
+  const values=[['Model name',meta.model_name],['Model version',meta.model_version],['Training dataset',meta.dataset],['ROC-AUC',Number(meta.metrics.roc_auc).toFixed(3)],['F1-score',Number(meta.metrics.f1).toFixed(3)],['Precision',Number(meta.metrics.precision).toFixed(3)],['Recall',Number(meta.metrics.recall).toFixed(3)],['Accuracy',Number(meta.metrics.accuracy).toFixed(3)]];
+   content='<p class="driver-method">Metadata loaded from the validated training artifact.</p><dl class="model-performance-list">'+values.map(([label,value])=>'<div><dt>'+esc(label)+'</dt><dd>'+esc(value)+'</dd></div>').join('')+'</dl>';
+ }else{
+  content='<p class="ml-status">Trained model metadata is unavailable. Run <code>python -m ml.train</code> to generate the model and measured evaluation report. Bundled model figures are kept in Settings.</p>';
+ }
+ return '<section class="card"><h3>Model performance</h3>'+content+'</section>';
+}
+function featureNameLabel(name){return FIELD_LABELS[name]||String(name).replace(/([a-z])([A-Z])/g,'$1 $2').replace(/_/g,' ');}
+function globalImportancePanel(){
+ const data=state.modelImportance&&state.modelImportance.model_id===state.modelId?state.modelImportance:null;
+ if(!trainedModelAvailable(currentModel())){
+  return '<section class="card"><h3>Top attrition drivers</h3><p class="ml-status">Dataset-wide trained-model importance is available when the trained IBM HR model is running. The other bundled models do not have this evaluation artifact.</p></section>';
+ }
+ if(!data){
+  loadGlobalImportance();
+  return '<section class="card"><h3>Top attrition drivers</h3><div class="skel-wrap">'+skel()+'</div><p class="driver-method">Calculating from held-out test data.</p></section>';
+ }
+ if(data.error)return '<section class="card"><h3>Top attrition drivers</h3><p class="ml-status">'+esc(data.error)+'</p></section>';
+ const rows=Array.isArray(data.features)?data.features.slice(0,8):[];
+ const positive=rows.map(row=>Math.max(0,Number(row.importance_mean)||0));
+ const max=Math.max(0.000001,...positive);
+ const list=rows.map(row=>{
+  const amount=Number(row.importance_mean)||0;
+  const width=Math.max(0,Math.min(100,Math.max(0,amount)/max*100));
+  return '<li><div class="importance-head"><strong>'+esc(featureNameLabel(row.feature))+'</strong><span class="importance-value">'+(amount>=0?'+':'')+amount.toFixed(4)+'</span></div><div class="importance-bar"><i class="'+(amount<0?'negative':'')+'" style="width:'+width.toFixed(1)+'%"></i></div></li>';
+ }).join('');
+ return '<section class="card"><h3>Top attrition drivers</h3><p class="driver-method">'+esc(data.method||'Held-out test-set feature importance')+'</p>'+(list?'<ol class="importance-list">'+list+'</ol>':'<p class="muted">No importance values in the trained artifact.</p>')+'<p class="muted small">Global ranking, not proof that a feature causes attrition.</p></section>';
+}
+function loadGlobalImportance(){
+ if(!state.api||state.modelId!=='ibm'||state.importanceLoading)return;
+ const modelId=state.modelId,seq=++state.importanceSeq;
+ state.importanceLoading=true;
+ api('/model/importance').then(data=>{
+  if(seq!==state.importanceSeq)return;
+  state.modelImportance=Object.assign({model_id:modelId},data);
+  state.importanceLoading=false;
+  if(state.user&&currentScreen()==='dashboard')renderView();
+ }).catch(error=>{
+  if(seq!==state.importanceSeq)return;
+  state.modelImportance={model_id:modelId,error:error.message};
+  state.importanceLoading=false;
+  if(state.user&&currentScreen()==='dashboard')renderView();
+ });
+}
+function avgRiskByGroup(){
+ const m=currentModel();const sc=scoredEmployees();const by={};
+ sc.forEach(x=>{(by[x.emp[m.deptKey]]=by[x.emp[m.deptKey]]||[]).push(x.p);});
+ return Object.keys(by).map(k=>({label:k,value:by[k].reduce((a,b)=>a+b,0)/by[k].length,color:'var(--accent)'})).sort((a,b)=>b.value-a.value);
+}
+VIEWS.dashboard={
+ render(){
+  const cs=companyStats();const m=currentModel();
+  const banner=workspaceBanner(m);
+  if(!cs.count)return banner+'<div class="page-head"><h2>Dashboard</h2></div>'+emptyHTML('No employees yet','Add employees one by one, import a CSV file, or load 25 sample employees to see risk scores, reasons and charts.',[{action:'sample',label:'Load sample data',primary:true},{action:'goto',to:'add',tab:'csv',label:'Import CSV'}])+'<div class="grid-2" style="margin-top:16px">'+modelPerformancePanel()+globalImportancePanel()+'</div>';
+  const sc=scoredEmployees();
+  const top5=sc.slice().sort((a,b)=>b.p-a.p).slice(0,5);
+  const headline=cs.high>0?'<b>'+cs.high+'</b> '+(cs.high===1?'employee needs':'employees need')+' attention':'No one is at high risk right now — keep an eye on the trends.';
+  return banner+'<div class="page-head"><h2>Dashboard</h2><div class="quick">'
+   +'<button class="btn btn-primary" data-action="goto" data-to="add">'+icon('user-plus',15)+' Add employee</button>'
+   +'<button class="btn" data-action="goto" data-to="add" data-tab="csv">'+icon('upload',15)+' Import CSV</button>'
+   +'<button class="btn" data-action="sample">'+icon('users',15)+' Load sample data</button></div></div>'
+   +'<div class="kpis dashboard-risk-kpis">'
+   +kpi('Employees',fmtInt(cs.count),'people in the current model')
+   +kpi('Average predicted attrition probability',fmtPct(cs.avg),'overall workforce risk')
+   +kpi('High-risk employees',fmtInt(cs.high),fmtPct(RISK_HIGH_BOUNDARY,0)+' or higher')
+   +kpi('Medium-risk employees',fmtInt(cs.medium),fmtPct(RISK_MEDIUM_BOUNDARY,0)+' to below '+fmtPct(RISK_HIGH_BOUNDARY,0))
+   +kpi('Low-risk employees',fmtInt(cs.low),'below '+fmtPct(RISK_MEDIUM_BOUNDARY,0))
+   +kpi('Expected leavers',cs.expected.toFixed(1),'sum of all risk scores')
+   +'</div>'
+   +'<h2 class="headline">'+headline+'</h2>'
+   +'<div class="grid-2"><section class="card"><h3>Needs attention</h3><ul class="attn">'
+   +top5.map(x=>'<li><button data-action="emp-row" data-id="'+x.emp.id+'"><span><span class="a-name">'+esc(displayName(x.emp,x.i))+'</span><br><span class="a-role">'+esc(valueLabel(m.roleKey,x.emp[m.roleKey]))+'</span></span><span class="a-risk">'+riskBadge(x.p)+'</span></button></li>').join('')
+   +'</ul></section>'
+   +'<section class="card"><h3>Average risk by '+(m.deptKey===m.roleKey?'industry':'department')+'</h3><div id="dash-chart"></div></section></div>'
+   +'<div class="grid-2" style="margin-top:16px">'+modelPerformancePanel()+globalImportancePanel()+'</div>';
+ },
+ init(){drawBarChart('#dash-chart',avgRiskByGroup(),{fmt:v=>fmtPct(v),alt:'Average risk by '+(currentModel().deptKey===currentModel().roleKey?'industry':'department')});}
+};
+
+/* ===== EMPLOYEES ===== */
+const empView={q:'',risk:'',group:'',sortKey:'p',sortDir:-1,page:0,selected:new Set()};
+function empRows(){
+ const m=currentModel();
+ let rows=scoredEmployees();
+ if(empView.q){const q=empView.q.toLowerCase();rows=rows.filter(x=>(displayName(x.emp,x.i)+' '+x.emp[m.roleKey]+' '+x.emp[m.deptKey]).toLowerCase().indexOf(q)>-1);}
+ if(empView.risk)rows=rows.filter(x=>x.lvl===empView.risk);
+ if(empView.group)rows=rows.filter(x=>x.emp[m.deptKey]===empView.group);
+ rows.sort((a,b)=>{
+  const k=empView.sortKey;let va,vb;
+  if(k==='name'){va=a.emp.name.toLowerCase();vb=b.emp.name.toLowerCase();}
+  else if(k==='role'){va=String(a.emp[m.roleKey]);vb=String(b.emp[m.roleKey]);}
+  else{va=a.p;vb=b.p;}
+  return (va<vb?-1:va>vb?1:0)*empView.sortDir;
+ });
+ return rows;
+}
+function currentPageRows(){
+ const all=empRows();const pages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));
+ const page=Math.min(empView.page,pages-1);
+ return all.slice(page*PAGE_SIZE,(page+1)*PAGE_SIZE);
+}
+function thBtn(key,label){
+ const arrow=empView.sortKey===key?(empView.sortDir===1?'▲':'▼'):'';
+ return '<button class="th-btn" data-action="sort" data-key="'+key+'">'+esc(label)+' <span class="mono">'+arrow+'</span></button>';
+}
+function trainedModelAvailable(model){return !!(state.api&&state.modelReady&&state.token&&model&&model.id==='ibm');}
+function hasTrainedEmployeeScore(model,emp){
+ if(!trainedModelAvailable(model)||!state.trainedScores)return false;
+ const score=state.trainedScores[emp.id];
+ return typeof score==='number'&&Number.isFinite(score);
+}
+function syncBulkBtn(){
+ const b=$('[data-action="emp-bulk"]');
+ if(b){b.disabled=!empView.selected.size;b.innerHTML='Delete selected ('+empView.selected.size+')';}
+}
+function syncCheckAll(){
+ const box=$('#emp-check-all');if(!box)return;
+ const rows=currentPageRows();
+ box.checked=rows.length>0&&rows.every(r=>empView.selected.has(r.emp.id));
+}
+VIEWS.employees={
+ render(){
+  const m=currentModel();
+  const groups=Array.from(new Set(employees().map(e=>e[m.deptKey]))).sort();
+  const all=empRows();
+  const pages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));
+  if(empView.page>=pages)empView.page=pages-1;
+  const pageRows=currentPageRows();
+  const start=all.length?empView.page*PAGE_SIZE+1:0;
+  const end=Math.min(all.length,(empView.page+1)*PAGE_SIZE);
+  const groupLabel=m.deptKey===m.roleKey?'industries':'departments';
+  return '<div class="page-head"><h1>Employees</h1><div class="quick">'
+   +'<button class="btn" data-action="emp-bulk"'+(empView.selected.size?'':' disabled')+'>Delete selected ('+empView.selected.size+')</button>'
+   +'<button class="btn btn-danger" data-action="emp-clear"'+(employees().length?'':' disabled')+'>Clear all</button>'
+   +'<button class="btn btn-primary" data-action="goto" data-to="add">Add employee</button></div></div>'
+   +'<div class="toolbar">'
+   +'<input id="emp-search" class="input" type="search" placeholder="Search name or role…" value="'+esc(empView.q)+'" aria-label="Search employees">'
+   +'<select class="input input-sm" data-filter="risk" aria-label="Filter by risk level"><option value="">All risk levels</option><option'+(empView.risk==='High'?' selected':'')+'>High</option><option'+(empView.risk==='Medium'?' selected':'')+'>Medium</option><option'+(empView.risk==='Low'?' selected':'')+'>Low</option></select>'
+   +'<select class="input input-sm" data-filter="group" aria-label="Filter by '+groupLabel+'"><option value="">All '+groupLabel+'</option>'+groups.map(g=>'<option'+(empView.group===g?' selected':'')+'>'+esc(g)+'</option>').join('')+'</select>'
+   +'<span class="muted small">Risk level '+infoTip('Low: below '+fmtPct(RISK_MEDIUM_BOUNDARY,0)+'. Medium: '+fmtPct(RISK_MEDIUM_BOUNDARY,0)+' to below '+fmtPct(RISK_HIGH_BOUNDARY,0)+'. High: '+fmtPct(RISK_HIGH_BOUNDARY,0)+' or higher.')+' · '+all.length+' of '+employees().length+' employees</span>'
+   +'</div>'
+   +(employees().length===0
+    ?emptyHTML('No employees yet','Add employees manually, import a CSV, or load sample data. Then they show up here with their risk and top reasons.',[{action:'goto',to:'add',label:'Add / Import employees',primary:true},{action:'sample',label:'Load sample data'}])
+    :all.length===0
+    ?'<div class="card empty"><p>No employees match your filters.</p><button class="btn" data-action="emp-reset-filters">Clear filters</button></div>'
+    :'<div class="table-wrap"><table class="table"><thead><tr>'
+    +'<th scope="col"><input type="checkbox" id="emp-check-all" aria-label="Select all on this page"'+(pageRows.length&&pageRows.every(r=>empView.selected.has(r.emp.id))?' checked':'')+'></th>'
+    +'<th scope="col">'+thBtn('name','Name')+'</th>'
+    +'<th scope="col">'+thBtn('role',m.roleKey===m.deptKey?'Industry':'Role')+'</th>'
+    +'<th scope="col">'+thBtn('p','Risk')+'</th>'
+    +'<th scope="col">Top reasons</th><th scope="col">Actions</th></tr></thead><tbody>'
+    +pageRows.map(x=>'<tr>'
+     +'<td><input type="checkbox" data-check data-id="'+x.emp.id+'"'+(empView.selected.has(x.emp.id)?' checked':'')+' aria-label="Select '+esc(displayName(x.emp,x.i))+'"></td>'
+     +'<td><button class="row-link" data-action="emp-row" data-id="'+x.emp.id+'">'+esc(displayName(x.emp,x.i))+'</button></td>'
+     +'<td>'+esc(valueLabel(m.roleKey,x.emp[m.roleKey]))+'</td>'
+     +'<td><div class="risk-cell">'+riskBadge(x.p)+'<button class="row-link risk-explain-link" data-action="emp-row" data-id="'+x.emp.id+'" aria-label="Why this risk remark for '+esc(displayName(x.emp,x.i))+' and how to help">Why &amp; how to help</button></div></td>'
+      +'<td><div class="reasons-mini">'+(trainedModelAvailable(m)?'<span class="muted">Open model explanation</span>':(reasonsFor(m,x.emp,TOP_LIST).map(r=>'<span>'+esc(r.label)+'</span>').join('')||'<span class="muted">none</span>'))+'</div></td>'
+     +'<td><div class="quick"><button class="tb-icon" data-action="whatif-open" data-id="'+x.emp.id+'" aria-label="What-if for '+esc(displayName(x.emp,x.i))+'" title="What-if">'+icon('flask',15)+'</button>'
+     +'<button class="tb-icon" data-action="emp-delete" data-id="'+x.emp.id+'" aria-label="Delete '+esc(displayName(x.emp,x.i))+'" title="Delete">'+icon('trash',15)+'</button></div></td>'
+     +'</tr>').join('')
+    +'</tbody></table></div>'
+    +'<div class="pager"><span class="muted small">Showing '+start+'–'+end+' of '+all.length+'</span>'
+    +'<button class="btn" data-action="page-prev"'+(empView.page===0?' disabled':'')+'>'+icon('chev-l',15)+' Prev</button>'
+    +'<span class="mono small">Page '+(empView.page+1)+' / '+pages+'</span>'
+    +'<button class="btn" data-action="page-next"'+(empView.page>=pages-1?' disabled':'')+'>Next '+icon('chev-r',15)+'</button></div>');
+ }
+};
+function employeeRemark(model,emp){
+ const trained=trainedModelAvailable(model);
+ const p=employeeProbability(model,emp);
+ const reasons=trained?[]:reasonsFor(model,emp,TOP_DETAIL);
+ const reasonFields=new Set(reasons.map(r=>r.field));
+ const suggestions=trained?[]:model.fix.map((action,i)=>{
+  const after=employeeProbability(model,emp,String(i));
+  return {action,after,drop:p-after,related:reasonFields.has(action.k)};
+ }).filter(s=>s.drop>=PERSONAL_ACTION_MIN_DROP)
+  .sort((a,b)=>Number(b.related)-Number(a.related)||b.drop-a.drop).slice(0,TOP_LIST);
+ return {p,reasons,suggestions,trained};
+}
+function employeeOutcomeHTML(model,emp,p){
+ const trained=trainedModelAvailable(model);
+ const ready=hasTrainedEmployeeScore(model,emp);
+ const probability=ready?state.trainedScores[emp.id]:p;
+ const level=ready||!trained?riskLevel(probability):'Calculating…';
+ const pred=trained?(state.trainedPredictions&&state.trainedPredictions[emp.id]||'Calculating…'):'Unavailable for bundled score';
+ return '<section class="employee-outcome" aria-label="Employee model prediction"><dl class="employee-outcome-grid">'
+  +'<div><dt>Risk level</dt><dd id="employee-risk-level">'+esc(level)+'</dd></div>'
+  +'<div><dt>Attrition probability</dt><dd id="employee-probability">'+(trained&&!ready?'Calculating…':esc(fmtPct(probability,2)))+'</dd></div>'
+  +'<div><dt>Prediction</dt><dd id="employee-prediction">'+esc(pred)+'</dd></div>'
+  +'</dl></section>';
+}
+function riskRemarkExplanation(p){
+ const level=riskLevel(p);
+ const range=level==='High'?'at or above the high-risk line of '+fmtPct(RISK_HIGH_BOUNDARY,0)
+  :level==='Medium'?'at or above the medium-risk line of '+fmtPct(RISK_MEDIUM_BOUNDARY,0)+' but below the high-risk line of '+fmtPct(RISK_HIGH_BOUNDARY,0)
+  :'below the medium-risk line of '+fmtPct(RISK_MEDIUM_BOUNDARY,0);
+ return 'This model estimates a '+fmtPct(p)+' chance of leaving, '+range+'. This label is a model estimate, not a fact about the employee.';
+}
+function xaiFactorList(factors,title){
+ const section=document.createElement('section');section.className='xai-group';
+ const heading=document.createElement('h4');heading.textContent=title;section.appendChild(heading);
+ if(!Array.isArray(factors)||!factors.length){
+  const empty=document.createElement('p');empty.className='muted small';empty.textContent='No individual features in this direction for this prediction.';section.appendChild(empty);return section;
+ }
+ const list=document.createElement('ol');list.className='xai-list';
+ factors.forEach(factor=>{
+  const item=document.createElement('li');
+  const head=document.createElement('div');head.className='xai-factor-head';
+  const name=document.createElement('span');name.className='xai-factor-name';name.textContent=factor.label+' = '+String(factor.value);
+  const impact=document.createElement('span');impact.className='xai-factor-impact';
+  const amount=Number(factor.contribution_percentage_points);
+  impact.textContent=(amount>0?'+':'')+amount.toFixed(2)+' pp';
+  head.append(name,impact);item.appendChild(head);
+  const track=document.createElement('div');track.className='xai-meter';
+  const bar=document.createElement('i');
+  const weight=Math.max(0,Math.min(100,Number(factor.relative_importance)*100));
+  bar.style.width=weight.toFixed(1)+'%';track.appendChild(bar);item.appendChild(track);list.appendChild(item);
+ });
+ section.appendChild(list);return section;
+}
+function renderTrainedExplanation(target,result){
+ target.replaceChildren();
+ const summary=document.createElement('p');summary.className='muted small';summary.textContent=result.explanation;target.appendChild(summary);
+ const method=document.createElement('p');method.className='xai-intro';
+ method.textContent=result.explanation_method+'; contribution values are approximate changes in model probability versus sampled training employees, not causes.';
+ target.appendChild(method);
+ target.appendChild(xaiFactorList(result.top_risk_factors,'Factors increasing the model estimate'));
+ target.appendChild(xaiFactorList(result.protective_factors,'Factors decreasing the model estimate'));
+}
+function renderTrainedActions(target,employee,baseProbability,predictions,model){
+ target.replaceChildren();
+ const rows=(predictions||[]).map((result,index)=>({action:model.fix[index],probability:Number(result.probability),drop:baseProbability-Number(result.probability)}))
+  .filter(row=>row.action&&Number.isFinite(row.probability)&&row.drop>0)
+  .sort((a,b)=>b.drop-a.drop).slice(0,TOP_LIST);
+ if(!rows.length){
+  const p=document.createElement('p');p.className='muted small';p.textContent='The listed company actions did not lower this employee’s trained-model estimate. Consider a supportive conversation about working conditions.';target.appendChild(p);return;
+ }
+ const list=document.createElement('ul');list.className='remark-actions';
+ rows.forEach(row=>{
+  const li=document.createElement('li');const advice=document.createElement('strong');advice.textContent=actionAdvice(row.action);
+  const detail=document.createElement('span');detail.textContent='In a what-if, the trained model estimate changes from '+fmtPct(baseProbability,2)+' to '+fmtPct(row.probability,2)+' (down '+(row.drop*100).toFixed(2)+' percentage points). This is a model estimate, not a promised result.';
+  li.append(advice,detail);list.appendChild(li);
+ });
+ target.appendChild(list);
+}
+function requestEmployeeExplanation(id,employee,model){
+ if(!trainedModelAvailable(model))return;
+ const root=$('#drawer-root .drawer');
+ if(root)root.dataset.employeeId=id;
+ Promise.all([
+  api('/predict',{method:'POST',body:JSON.stringify({features:employee})}),
+  api('/predict/batch',{method:'POST',body:JSON.stringify({employees:model.fix.map(action=>applyAction(model,employee,action))})})
+ ]).then(function(results){
+  const current=$('#drawer-root .drawer');
+  if(!current||current.dataset.employeeId!==id)return;
+  const prediction=results[0];
+  const p=Number(prediction.probability);
+  if(!Number.isFinite(p)||!Array.isArray(prediction.top_risk_factors)||!Array.isArray(prediction.protective_factors)){
+   throw new Error('The trained service returned an incomplete explanation.');
+  }
+  const head=$('#drawer-head-risk');if(head)head.innerHTML=riskBadge(p);
+  const score=$('#remark-risk');if(score)score.innerHTML=riskBadge(p);
+  const level=$('#employee-risk-level');if(level)level.textContent=prediction.risk_level;
+  const probability=$('#employee-probability');if(probability)probability.textContent=fmtPct(p,2);
+  const predictionLabel=$('#employee-prediction');if(predictionLabel)predictionLabel.textContent=prediction.prediction;
+  const summary=$('#remark-explanation');if(summary)summary.textContent='The trained model estimates '+fmtPct(p)+' attrition probability; its prediction is '+prediction.prediction+'.';
+  const output=$('#trained-explanation');if(output)renderTrainedExplanation(output,prediction);
+  const actions=$('#trained-actions');if(actions)renderTrainedActions(actions,employee,p,results[1].predictions,model);
+ }).catch(function(error){
+  const current=$('#drawer-root .drawer');
+  if(!current||current.dataset.employeeId!==id)return;
+  const predictionLabel=$('#employee-prediction');if(predictionLabel)predictionLabel.textContent='Unavailable';
+  const output=$('#trained-explanation');
+  if(output){output.textContent='The trained-model explanation is unavailable: '+error.message;}
+  const actions=$('#trained-actions');
+  if(actions)actions.textContent='Trained-model action estimates are unavailable.';
+ });
+}
+function openEmployeeDrawer(id){
+ const m=currentModel();const idx=employees().findIndex(e=>e.id===id);
+ if(idx<0)return;
+ const emp=employees()[idx];
+ const {p,reasons,suggestions,trained}=employeeRemark(m,emp);
+ const maxC=Math.max.apply(null,reasons.map(r=>r.c).concat([0.0001]));
+ const numKeys=Object.keys(m.num),catKeys=Object.keys(m.cat);
+ openDrawer(
+  '<div class="drawer-head"><div><h2>'+esc(displayName(emp,idx))+'</h2><p class="muted">'+esc(valueLabel(m.roleKey,emp[m.roleKey]))+' · '+esc(valueLabel(m.deptKey,emp[m.deptKey]))+'</p></div><div id="drawer-head-risk">'+(trained&&!hasTrainedEmployeeScore(m,emp)?'<span class="muted small">Trained estimate loading…</span>':riskBadge(p))+'</div><button class="tb-icon" data-action="drawer-close" aria-label="Close employee details">'+icon('x',18)+'</button></div>'
+  +employeeOutcomeHTML(m,emp,p)
+  +'<section class="remark" aria-label="Attrition remark">'
+  +'<p class="remark-kicker">Attrition remark</p><div class="remark-status" id="remark-risk">'+(trained&&!hasTrainedEmployeeScore(m,emp)?'<span class="muted small">Trained estimate loading…</span>':riskBadge(p))+'</div>'
+  +'<p class="remark-explanation" id="remark-explanation">'+esc(riskRemarkExplanation(p))+'</p>'
+  +(trained?'<h3>Why this remark?</h3><p class="muted small">These feature contributions are calculated from the trained model and sampled training rows. They are model associations, not causes.</p><section id="trained-explanation" aria-live="polite"><p class="muted">Calculating the trained-model explanation…</p></section>'
+   :'<h3>Bundled score factors</h3><p class="muted small">This fallback uses the bundled coefficient score. It is not a trained-artifact explanation or proof of cause.</p>'
+    +(reasons.length?'<ol class="remark-reasons">'+reasons.map(r=>'<li><div class="reason-top"><strong>'+esc(r.label)+'</strong>'
+   +(r.kind==='num'?'<span class="reason-value">'+esc(fmtField(m,r.field,r.value)+(FIELD_UNITS[r.field]?' '+FIELD_UNITS[r.field]:''))+'</span>':'')
+   +'</div><div class="bar" role="img" aria-label="Relative model contribution for '+esc(r.label)+'"><i style="width:'+Math.min(100,r.c/maxC*100).toFixed(0)+'%"></i></div></li>').join('')+'</ol>'
+    :'<p class="muted">No individual field crosses the reason threshold. This score comes from the combined bundled model inputs.</p>'))
+  +'<h3>How to help</h3><p class="muted small">Explore company-controlled changes with the employee, not changes to their personal background.</p>'
+  +(trained?'<div id="trained-actions" aria-live="polite"><p class="muted">Calculating company-action estimates with the trained model…</p></div>'
+   :(suggestions.length?'<ul class="remark-actions">'+suggestions.map(s=>{
+   const related=reasons.find(r=>r.field===s.action.k);
+   return '<li><strong>'+esc(actionAdvice(s.action))+'</strong><span>'
+    +(related?'Related to '+esc(related.label)+'. ':'')
+    +'In a what-if, estimated risk changes from '+fmtPct(p,2)+' to '+fmtPct(s.after,2)+' (down '+(s.drop*100).toFixed(2)+' percentage points).</span></li>';
+  }).join('')+'</ul>'
+    :'<p class="muted">No listed company action currently lowers this estimate meaningfully. Start with a supportive conversation about what would make work better.</p>'))
+  +'<p class="muted small">'+esc(CAUSE_TEXT)+'</p></section>'
+  +'<div class="quick"><button class="btn btn-primary" data-action="retention-guide" data-id="'+id+'">'+icon('users',15)+' Prepare a retention conversation</button>'
+  +'<button class="btn" data-action="whatif-open" data-id="'+id+'">'+icon('flask',15)+' What-if</button></div>'
+  +'<h3>All fields</h3><dl class="fields">'
+  +numKeys.concat(catKeys).map(k=>'<dt>'+esc(FIELD_LABELS[k]||k)+'</dt><dd>'+esc(fmtField(m,k,emp[k]))+'</dd>').join('')
+  +'</dl>',
+  'Employee details');
+ if(trained){
+  const drawer=$('#drawer-root .drawer');if(drawer)drawer.dataset.employeeId=id;
+  requestEmployeeExplanation(id,emp,m);
+ }
+}
+function openRetentionGuide(id){
+ const m=currentModel();const idx=employees().findIndex(e=>e.id===id);
+ if(idx<0)return;
+ const emp=employees()[idx];
+ const reasons=reasonsFor(m,emp,TOP_DETAIL);
+ const points=buildTalkGuide(reasons.map(r=>r.field));
+ openModal('<h3>Retention conversation guide</h3>'
+  +'<p class="muted">For '+esc(displayName(emp,idx))+' · '+esc(valueLabel(m.roleKey,emp[m.roleKey]))+'</p>'
+  +'<div class="callout">This is a supportive conversation, not a warning.</div>'
+  +'<ol class="guide">'+points.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ol>'
+  +'<p class="muted small">Talk about support and working conditions. Never use the risk score to pressure, punish or dismiss anyone.</p>'
+  +'<div class="quick" style="margin-top:14px"><button class="btn btn-primary" data-action="modal-resolve" data-v="1">Done</button></div>');
+}
+function deleteOneEmployee(id){
+ const emp=findEmp(id);
+ const name=emp?displayName(emp,employees().indexOf(emp)):'employee';
+ confirmDialog('Delete '+name+'?','Delete employee').then(ok=>{
+  if(!ok)return;
+  const removed=deleteEmployeesById([id]);
+  empView.selected.delete(id);
+  renderView();
+  toast('Deleted '+name,'undo',UNDO_MS,{label:'Undo',fn:()=>{restoreEmployees(removed);toast('Employee restored');renderView();}});
+ });
+}
+function deleteSelectedEmployees(){
+ const ids=Array.from(empView.selected);
+ if(!ids.length)return;
+ confirmDialog('Delete '+ids.length+' selected employee'+(ids.length===1?'':'s')+'?','Delete employees').then(ok=>{
+  if(!ok)return;
+  const removed=deleteEmployeesById(ids);
+  empView.selected.clear();
+  renderView();
+  toast('Deleted '+removed.length+' employee'+(removed.length===1?'':'s'),'undo',UNDO_MS,{label:'Undo',fn:()=>{restoreEmployees(removed);toast('Employees restored');renderView();}});
+ });
+}
+function clearAllEmployees(){
+ confirmDialog('Delete ALL employees in this model?','Clear all employees').then(ok=>{
+  if(!ok)return;
+  const removed=employees().map((emp,idx)=>({idx,emp}));
+  modelData().employees=[];
+  invalidateCache();saveAccount();logAction('Cleared all employees ('+removed.length+')');
+  empView.selected.clear();
+  renderView();
+  toast('Deleted all employees','undo',UNDO_MS,{label:'Undo',fn:()=>{restoreEmployees(removed);toast('Employees restored');renderView();}});
+ });
+}
+/* ===== ADD / IMPORT ===== */
+const addView={tab:'form'};
+let csvResult=null,csvPendingText='',csvPendingName='';
+VIEWS.add={
+ render(){
+   const m=location.hash.match(/[?&]tab=(form|csv|sample)(?:&|$)/);
+  addView.tab=m?m[1]:'form';
+  const tabs=[['form','Manual form'],['csv','Import CSV'],['sample','Sample data']];
+  let body='';
+  if(addView.tab==='csv')body=csvHTML();
+  else if(addView.tab==='sample')body=sampleHTML();
+  else body=formHTML(currentModel());
+  return '<div class="page-head"><h1>Add / Import</h1></div><div class="tabs" role="tablist">'
+   +tabs.map(t=>'<button class="tab'+(addView.tab===t[0]?' active':'')+'" role="tab" aria-selected="'+(addView.tab===t[0])+'" data-action="add-tab" data-tab="'+t[0]+'">'+esc(t[1])+'</button>').join('')
+   +'</div>'+body;
+ },
+  init(){
+   if(addView.tab!=='csv')return;
+   wireDropzone();
+   if(csvResult&&csvResult.modelId===state.modelId)renderCsvReport(csvResult);
+  }
+};
+function formHTML(m){
+ const t=typicalEmployee(m);
+ const groups=FORM_GROUPS.map(g=>({title:g[0],keys:g[1].filter(k=>(m.num[k]||m.cat[k]))})).filter(g=>g.keys.length);
+ return '<form id="add-form" class="card" novalidate><h3>New employee</h3>'
+  +'<label>Name<input class="input" name="name" placeholder="e.g. Alex Morgan"></label>'
+  +'<div class="form-grid">'
+  +groups.map(g=>'<div class="form-section">'+esc(g.title)+'</div>'+g.keys.map(k=>{
+   if(m.num[k]){
+    const f=m.num[k];const isMoney=(k==='MonthlyIncome'||k==='Salary');const unit=FIELD_UNITS[k]||'';
+    return '<label>'+esc(FIELD_LABELS[k]||k)+'<div class="num-wrap">'+(isMoney?'<span class="unit pre">$</span>':'')+'<input class="input" type="number" name="'+esc(k)+'" min="'+f.min+'" max="'+f.max+'" step="1" value="'+t[k]+'">'+(isMoney?'':'<span class="unit">'+esc(unit)+'</span>')+'</div></label>';
+   }
+   return '<label>'+esc(FIELD_LABELS[k]||k)+'<select class="input" name="'+esc(k)+'">'+Object.keys(m.cat[k]).map(v=>'<option value="'+esc(v)+'"'+(t[k]===v?' selected':'')+'>'+esc(valueLabel(k,v))+'</option>').join('')+'</select></label>';
+  }).join('')).join('')
+  +'</div><div id="form-error" class="form-error" role="alert" hidden></div>'
+  +'<button class="btn btn-primary" type="submit">'+icon('plus',15)+' Add employee</button></form>';
+}
+function handleAddForm(form){
+ const m=currentModel();const fd=new FormData(form);
+ const name=(fd.get('name')||'').toString().trim();
+ const errs=[];
+ form.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));
+ if(!name)errs.push('Please enter a name.');
+ const emp={id:uid(),name:name};
+ for(const k in m.num){
+  const f=m.num[k];const raw=(fd.get(k)||'').toString().trim();
+  if(raw===''){emp[k]=Math.round(m.medians[k]);continue;}
+  const v=Number(raw);
+  if(!Number.isFinite(v)){errs.push((FIELD_LABELS[k]||k)+' must be a number.');form.querySelector('[name="'+k+'"]').classList.add('invalid');continue;}
+  if(v<f.min||v>f.max){errs.push((FIELD_LABELS[k]||k)+' must be between '+f.min+' and '+f.max+'.');form.querySelector('[name="'+k+'"]').classList.add('invalid');continue;}
+  emp[k]=Math.round(v);
+ }
+ for(const k in m.cat){emp[k]=String(fd.get(k)||m.catdef[k]);}
+ const errBox=form.querySelector('#form-error');
+ if(errs.length){
+  errBox.innerHTML=errs.map(e=>'<div>'+icon('alert',13)+' '+esc(e)+'</div>').join('');
+  errBox.hidden=false;return;
+ }
+ errBox.hidden=true;
+ addEmployees([emp]);
+ toast('Added '+displayName(emp,employees().length-1));
+ location.hash='#/employees';
+}
+function csvHTML(){
+ return '<div class="card"><h3>Import CSV</h3>'
+  +'<p class="muted small">The first row must be a header. Add a <b>name</b> column if you have one; otherwise names are generated. Column names are matched ignoring case, spaces and symbols (e.g. "Monthly Income" matches MonthlyIncome). Missing columns get typical values; unknown columns are ignored; values outside the allowed range are clipped and counted. Maximum '+MAX_CSV_ROWS.toLocaleString('en-US')+' rows.</p>'
+  +'<div class="dropzone" id="dropzone" tabindex="0" role="button" data-action="csv-browse" aria-label="Drop a CSV file here or click to browse">'+icon('upload',22)+'<br>Drag &amp; drop a CSV file here, or click to browse</div>'
+  +'<input type="file" id="csv-file" accept=".csv,text/csv" hidden>'
+  +'<label>Paste CSV instead<textarea id="csv-paste" class="input mono" rows="4" placeholder="name,MonthlyIncome,OverTime…"></textarea></label>'
+  +'<div class="quick"><button class="btn btn-primary" data-action="csv-parse">'+icon('search',15)+' Preview import</button>'
+  +'<button class="btn" data-action="csv-template">'+icon('download',15)+' Download CSV template</button></div>'
+  +'<div id="csv-report" style="margin-top:16px"></div></div>';
+}
+function downloadCsvTemplate(){
+ const m=currentModel();const typical=typicalEmployee(m);
+ const fields=Object.keys(m.num).concat(Object.keys(m.cat));
+ const rows=[['name'].concat(fields),['Example Employee'].concat(fields.map(k=>typical[k]))];
+ downloadBlob('attrition-'+m.id+'-template.csv','text/csv',rows.map(row=>row.map(csvCell).join(',')).join('\r\n'));
+}
+function sampleHTML(){
+ return '<div class="card empty"><h2>Load sample data</h2><p class="muted" style="max-width:52ch">Creates '+SAMPLE_SIZE+' example employees with unique displayed leaving percentages spread across the 0–100% scale, as far as this model allows. Percentages come from their fields, not assigned numbers. Sample employees are added to your list — delete them any time.</p><button class="btn btn-primary" data-action="sample">'+icon('users',15)+' Load sample data</button></div>';
+}
+function wireDropzone(){
+ const dz=$('#dropzone');if(!dz)return;
+ dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag');});
+ dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+ dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)handleCsvFile(f);});
+ dz.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('#csv-file').click();}});
+}
+function parseCSVText(text){
+ text=String(text).replace(/^﻿/,'').replace(/^\uFEFF/,'');
+ const rows=[];let row=[],field='',q=false;
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(q){if(c==='"'){if(text[i+1]==='"'){field+='"';i++;}else q=false;}else field+=c;}
+  else if(c==='"')q=true;
+  else if(c===','){row.push(field);field='';}
+  else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+  else if(c!=='\r')field+=c;
+ }
+ if(field!==''||row.length){row.push(field);rows.push(row);}
+ return rows.filter(r=>r.some(c=>c.trim()!==''));
+}
+function normKey(s){return String(s).toLowerCase().replace(/[^a-z0-9]/g,'');}
+function importCSV(text){
+ const m=currentModel();
+ const rows=parseCSVText(text);
+ if(!rows.length)return {valid:[],rejected:[{row:1,reason:'The file is empty.'}],clipped:0,missing:Object.keys(m.num).concat(Object.keys(m.cat)),preview:[],total:0,truncated:false};
+ const header=rows[0].map(normKey);
+ const fieldFor={};
+ Object.keys(m.num).concat(Object.keys(m.cat)).forEach(f=>{fieldFor[normKey(f)]=f;});
+ const colField=header.map(h=>fieldFor[h]||null);
+ const nameCols=new Set(['name','employeename','employee','fullname','worker']);
+ const nameIdx=header.findIndex(h=>nameCols.has(h));
+ const typical=typicalEmployee(m);
+ const fields=Object.keys(m.num).concat(Object.keys(m.cat));
+ const missing=fields.filter(f=>header.indexOf(normKey(f))===-1);
+ if(nameIdx===-1)missing.unshift('name');
+ let clipped=0,generatedNames=0;const valid=[],rejected=[];
+ const seen=new Set(employees().map(e=>e.name.toLowerCase()));
+ const body=rows.slice(1);
+ let truncated=false;
+ for(let ri=0;ri<body.length;ri++){
+  if(valid.length+rejected.length>=MAX_CSV_ROWS){truncated=true;break;}
+  const r=body[ri];const rowNum=ri+2;
+   let name=nameIdx>-1?String(r[nameIdx]||'').trim():'Imported '+String(ri+1).padStart(3,'0');
+   if(!name){rejected.push({row:rowNum,reason:'Missing name'});continue;}
+   if(nameIdx===-1){
+    const base=name;let suffix=2;
+    while(seen.has(name.toLowerCase()))name=base+' '+suffix++;
+   }
+  if(seen.has(name.toLowerCase())){rejected.push({row:rowNum,reason:'Duplicate name'});continue;}
+   const emp=Object.assign({},typical,{id:uid(),name:name});
+  let bad=null;
+  colField.forEach((f,ci)=>{
+   if(!f)return;
+   const raw=String(r[ci]||'').trim();
+   if(m.num[f]){
+    let v=raw===''?null:Number(raw);
+    if(raw!==''&&!Number.isFinite(v)){bad='Column "'+header[ci]+'" is not a number';return;}
+    if(v===null)v=typical[f];
+    const spec=m.num[f];
+    if(v<spec.min||v>spec.max){clipped++;v=Math.min(spec.max,Math.max(spec.min,v));}
+     emp[f]=v;
+   }else{
+    const v=raw===''?typical[f]:raw;
+    if(!Object.prototype.hasOwnProperty.call(m.cat[f],v)){bad='Unknown value "'+raw+'" for '+(FIELD_LABELS[f]||f);return;}
+    emp[f]=v;
+   }
+  });
+  if(bad){rejected.push({row:rowNum,reason:bad});continue;}
+  seen.add(name.toLowerCase());
+  valid.push(emp);
+   if(nameIdx===-1)generatedNames++;
+ }
+ if(truncated)rejected.push({row:MAX_CSV_ROWS+2,reason:'Row limit of '+MAX_CSV_ROWS.toLocaleString('en-US')+' reached — extra rows ignored'});
+  const preview=valid.slice(0,5).map(e=>({name:e.name,role:valueLabel(m.roleKey,e[m.roleKey]),risk:fmtPct(scoreEmployee(m,e))}));
+ return {valid,rejected,clipped,generatedNames,missing,preview,total:Math.min(body.length,MAX_CSV_ROWS),truncated};
+}
+function renderCsvReport(res){
+ const el=$('#csv-report');if(!el)return;
+ const m=currentModel();
+ const dupCount=res.rejected.filter(r=>r.reason==='Duplicate name').length;
+ el.innerHTML='<div class="card"><h3>Data quality report</h3><div class="chips">'
+  +'<span class="chip chip-good">'+icon('check',12)+' '+res.valid.length+' valid rows</span>'
+  +'<span class="chip chip-bad">'+icon('alert',12)+' '+res.rejected.length+' rejected rows</span>'
+  +'<span class="chip">'+icon('info',12)+' '+res.clipped+' values clipped to the allowed range</span>'
+  +'<span class="chip">'+icon('info',12)+' '+dupCount+' duplicate names</span>'
+  +'<span class="chip">'+icon('info',12)+' '+res.total.toLocaleString('en-US')+' rows read (max '+MAX_CSV_ROWS.toLocaleString('en-US')+')</span></div>'
+  +'<p><b>Missing columns</b> (typical values used; names generated if absent): '+(res.missing.length?esc(res.missing.map(k=>FIELD_LABELS[k]||k).join(', ')):'none')+'</p>'
+  +(res.generatedNames?'<p>'+res.generatedNames+' employee names generated because no name column was found.</p>':'')
+  +(res.preview.length?'<h4>Preview — first '+res.preview.length+' valid rows</h4><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Name</th><th scope="col">'+esc(m.roleKey===m.deptKey?'Industry':'Role')+'</th><th scope="col">Risk</th></tr></thead><tbody>'+res.preview.map((r,i)=>'<tr><td>'+esc(state.privacy?'Employee '+String(employees().length+i+1).padStart(3,'0'):r.name)+'</td><td>'+esc(r.role)+'</td><td class="mono">'+r.risk+'</td></tr>').join('')+'</tbody></table></div>':'')
+  +(res.rejected.length?'<h4>Rejected rows</h4><ul class="rej">'+res.rejected.slice(0,50).map(r=>'<li>Row '+r.row+': '+esc(r.reason)+'</li>').join('')+(res.rejected.length>50?'<li>…and '+(res.rejected.length-50)+' more</li>':'')+'</ul>':'')
+  +'<div class="quick" style="margin-top:12px"><button class="btn btn-primary" data-action="csv-confirm"'+(res.valid.length?'':' disabled')+'>Import '+res.valid.length+' valid rows</button><button class="btn" data-action="csv-cancel">Start over</button></div></div>';
+}
+function handleCsvFile(file){
+ if(!file)return;
+ const btn=$('[data-action="csv-parse"]');
+ if(btn){btn.disabled=true;btn.classList.add('loading');}
+ const reader=new FileReader();
+ reader.onload=()=>{
+  csvPendingText=String(reader.result||'');csvPendingName=file.name;
+  if(btn){btn.disabled=false;btn.classList.remove('loading');}
+  runCsvImport(csvPendingText,file.name);
+ };
+ reader.onerror=()=>{if(btn){btn.disabled=false;btn.classList.remove('loading');}toast('Could not read that file.','alert');};
+ reader.readAsText(file);
+}
+function runCsvImport(text,name){
+ const rep=$('#csv-report');
+ if(rep)rep.innerHTML='<div class="skel-wrap">'+skel()+'</div>';
+ const modelId=state.modelId;
+ csvResult=null;
+ setTimeout(()=>{
+  if(state.modelId!==modelId)return;
+  try{
+   csvResult=importCSV(text);
+   csvResult.name=name||'pasted text';
+   csvResult.modelId=modelId;
+   renderCsvReport(csvResult);
+  }catch(e){
+   if(rep&&rep.isConnected)rep.innerHTML='<div class="form-error" role="alert">Could not read this CSV. Check its header and quoted fields, then try again.</div>';
+   toast('Could not read this CSV. Check its header and quoted fields.','alert');
+  }
+ },30);
+}
+function csvParseAction(){
+ const paste=(($('#csv-paste')||{}).value||'').trim();
+ const text=paste||csvPendingText;
+ if(!text){toast('Upload a CSV file or paste CSV text first.','alert');return;}
+ runCsvImport(text,csvPendingName||'pasted text');
+}
+function csvConfirmAction(){
+ if(!csvResult){toast('Preview an import first.','alert');return;}
+ if(csvResult.modelId!==state.modelId){toast('Choose Preview import again after changing models.','alert');return;}
+ if(!csvResult.valid.length){toast('No valid rows to import.','alert');return;}
+ const n=csvResult.valid.length;
+ addEmployees(csvResult.valid,'Imported');
+ toast('Imported '+n+' employee'+(n===1?'':'s')+' from CSV');
+ csvResult=null;csvPendingText='';csvPendingName='';
+ location.hash='#/employees';
+}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const SAMPLE_FIRST=['Ava','Liam','Noah','Emma','Olivia','Sophia','Mia','Lucas','Ethan','Isabella','Amelia','Jack','Chloe','Daniel','Layla','Mateo','Nora','Leo','Zoe','Owen','Ruby','Felix','Ivy','Hugo'];
+const SAMPLE_LAST=['Carter','Nguyen','Müller','Rossi','Kowalski','Silva','Novak','Tanaka','Haddad','Petrov','Lindqvist','Okafor','Brown','Kim','Fischer','Reyes','Andersson','Costa','Weber','Hassan'];
+function sampleCandidate(model,nums,cats,rng,intensity){
+ const emp={};
+ nums.forEach(([k,f])=>{
+  const amount=Math.max(0,Math.min(1,intensity+(rng()-0.5)*SAMPLE_FIELD_VARIATION));
+  const position=f.coef>=0?amount:1-amount;
+  emp[k]=Math.max(f.min,Math.min(f.max,Math.round(f.min+(f.max-f.min)*position)));
+ });
+ cats.forEach(({k,values})=>{
+  const amount=Math.max(0,Math.min(1,intensity+(rng()-0.5)*SAMPLE_FIELD_VARIATION));
+  emp[k]=values.length?values[Math.round(amount*(values.length-1))]:model.catdef[k];
+ });
+ if(model.num.TotalWorkingYears&&model.num.YearsAtCompany)emp.YearsAtCompany=Math.min(emp.YearsAtCompany,emp.TotalWorkingYears);
+ ['YearsInCurrentRole','YearsWithCurrManager','YearsSinceLastPromotion'].forEach(k=>{
+  if(model.num[k]&&model.num.YearsAtCompany)emp[k]=Math.min(emp[k],emp.YearsAtCompany);
+ });
+ return emp;
+}
+function generateSample(){
+ const model=currentModel();
+ const rng=mulberry32(SAMPLE_SEED+employees().length);
+ const nums=Object.entries(model.num);
+ const cats=Object.entries(model.cat).map(([k,coeffs])=>({k,values:Object.keys(coeffs).sort((a,b)=>coeffs[a]-coeffs[b])}));
+ const byDisplayedPercent=new Map();
+ for(let i=0;i<SAMPLE_SIZE*SAMPLE_POOL_PER_EMPLOYEE;i++){
+  const anchor=(i%SAMPLE_SIZE)/(SAMPLE_SIZE-1);
+  const intensity=Math.max(0,Math.min(1,anchor+(rng()-0.5)*SAMPLE_PROFILE_VARIATION));
+  const emp=sampleCandidate(model,nums,cats,rng,intensity);
+  const p=scoreEmployee(model,emp);
+  const display=fmtPct(p);
+  if(!byDisplayedPercent.has(display))byDisplayedPercent.set(display,{emp,p,display});
+ }
+ const existing=new Set(employees().map(e=>fmtPct(scoreEmployee(model,e))));
+ const all=Array.from(byDisplayedPercent.values());
+ const unused=all.filter(row=>!existing.has(row.display));
+ const choices=unused.length>=SAMPLE_SIZE?unused:all;
+ const chosen=[],used=new Set();
+ for(let i=0;i<SAMPLE_SIZE;i++){
+  const target=i/(SAMPLE_SIZE-1);
+  let nearest=null;
+  for(const row of choices){
+   if(used.has(row.display))continue;
+   if(!nearest||Math.abs(row.p-target)<Math.abs(nearest.p-target))nearest=row;
+  }
+  if(!nearest)break;
+  chosen.push(nearest);
+  used.add(nearest.display);
+ }
+ let retries=0;
+ while(chosen.length<SAMPLE_SIZE&&retries<SAMPLE_SIZE*SAMPLE_POOL_PER_EMPLOYEE){
+  retries++;
+  const emp=sampleCandidate(model,nums,cats,rng,rng());
+  const p=scoreEmployee(model,emp);
+  const display=fmtPct(p);
+  if(used.has(display))continue;
+  chosen.push({emp,p,display});
+  used.add(display);
+ }
+ while(chosen.length<SAMPLE_SIZE){
+  const emp=sampleCandidate(model,nums,cats,rng,rng());
+  chosen.push({emp,p:scoreEmployee(model,emp)});
+ }
+ for(let i=chosen.length-1;i>0;i--){
+  const j=Math.floor(rng()*(i+1));
+  [chosen[i],chosen[j]]=[chosen[j],chosen[i]];
+ }
+ const names=new Set(employees().map(e=>e.name.toLowerCase()));
+ return chosen.map((row,i)=>{
+  const base=SAMPLE_FIRST[i%SAMPLE_FIRST.length]+' '+SAMPLE_LAST[(i*SAMPLE_LAST_NAME_STEP)%SAMPLE_LAST.length];
+  let name=base,suffix=2;
+  while(names.has(name.toLowerCase()))name=base+' '+suffix++;
+  names.add(name.toLowerCase());
+  return Object.assign({id:uid(),name},row.emp);
+ });
+}
+
+/* ===== WHAT-IF ===== */
+const whatif={empId:null,vals:{}};
+function whatifFields(m){
+ const ks=[];
+ m.fix.forEach(a=>{if(ks.indexOf(a.k)===-1)ks.push(a.k);});
+ return ks;
+}
+function whatifModified(){
+ const m=currentModel();const emp=findEmp(whatif.empId);if(!emp)return null;
+ const mod=Object.assign({},emp);
+ whatifFields(m).forEach(k=>{if(k in whatif.vals)mod[k]=m.num[k]?Number(whatif.vals[k]):whatif.vals[k];});
+ return {emp,mod};
+}
+function whatifSignature(emp,mod){return JSON.stringify(collectChanges(currentModel(),emp,mod));}
+function currentTrainedWhatif(emp,mod){
+ const result=state.whatifTrainedResult;
+ return result&&result.empId===emp.id&&result.signature===whatifSignature(emp,mod)?result:null;
+}
+let wiRaf=null;
+let wiApiTimer=null;
+function scheduleWhatifUpdate(){
+ if(wiRaf)cancelAnimationFrame(wiRaf);
+ wiRaf=requestAnimationFrame(updateWhatifNumbers);
+ if(trainedModelAvailable(currentModel())){
+  state.wiSeq++;
+  if(wiApiTimer)clearTimeout(wiApiTimer);
+  wiApiTimer=setTimeout(requestTrainedWhatif,WHATIF_API_DEBOUNCE_MS);
+ }
+}
+function whatifResultsMarkup(emp,mod,original,scenario,loading,riskBefore,riskAfter){
+ const trained=trainedModelAvailable(currentModel());
+ const changes=collectChanges(currentModel(),emp,mod);
+ const keys=Object.keys(changes);
+ const base=Number.isFinite(Number(original))?Number(original):null;
+ const next=Number.isFinite(Number(scenario))?Number(scenario):null;
+ const delta=base!==null&&next!==null?(next-base)*100:null;
+ const levelBefore=riskBefore||(base===null?'Calculating…':riskLevel(base));
+ const levelAfter=riskAfter||(next===null?'Calculating…':riskLevel(next));
+ const changedMarkup=keys.length
+  ?'<ul class="wi-changed-list">'+keys.map(k=>'<li><strong>'+esc(FIELD_LABELS[k]||k)+':</strong> '+esc(fmtField(currentModel(),k,emp[k]))+' → '+esc(fmtField(currentModel(),k,changes[k]))+'</li>').join('')+'</ul>'
+  :'<p class="muted small">No variables changed from the original record.</p>';
+ const message=trained
+  ?'Model-estimated risk changed under this scenario. The model shows an association, not a cause or a promised retention outcome.'
+  :'The bundled coefficient estimate changes under this scenario. It is not a trained-model result and does not establish causality.';
+ return '<div class="wi-result-grid">'
+  +'<div class="wi-result-cell"><span class="wi-result-label">Original probability</span><strong class="wi-result-value" id="wi-original-prob">'+(base===null?'Calculating…':fmtPct(base,2))+'</strong><span class="muted small" id="wi-level-before">Risk level: '+esc(levelBefore||'Calculating…')+'</span></div>'
+  +'<div class="wi-result-cell"><span class="wi-result-label">New probability</span><strong class="wi-result-value" id="wi-new-prob">'+(next===null?'Calculating…':fmtPct(next,2))+'</strong><span class="muted small" id="wi-level-after">Risk level: '+esc(levelAfter||'Calculating…')+'</span></div>'
+  +'<div class="wi-result-cell"><span class="wi-result-label">Probability change</span><strong class="wi-result-value" id="wi-prob-change">'+(delta===null?'Calculating…':((delta>0?'+':'')+delta.toFixed(2)+' pp'))+'</strong></div>'
+  +'<div class="wi-result-cell wide"><span class="wi-result-label">Changed variables</span><div id="wi-changed-vars">'+changedMarkup+'</div></div>'
+  +'<div class="wi-result-cell wide"><span class="wi-result-label">Explanation</span><p class="wi-model-explanation" id="wi-model-explanation">'+esc(loading?'Calculating under the selected model…':message)+'</p></div></div>';
+}
+function updateWhatifResultDOM(original,scenario,riskBefore,riskAfter,emp,mod){
+ const changes=collectChanges(currentModel(),emp,mod),keys=Object.keys(changes);
+ const delta=(scenario-original)*100;
+ const o=$('#wi-original-prob'),n=$('#wi-new-prob'),d=$('#wi-prob-change');
+ if(o)o.textContent=fmtPct(original,2);
+ if(n)n.textContent=fmtPct(scenario,2);
+ if(d)d.textContent=(delta>0?'+':'')+delta.toFixed(2)+' pp';
+ const before=$('#wi-level-before'),after=$('#wi-level-after');
+ if(before)before.textContent='Risk level: '+riskBefore;
+ if(after)after.textContent='Risk level: '+riskAfter;
+  const chip=$('#wi-chip');if(chip)chip.innerHTML=changeChip(original,scenario);
+ const changed=$('#wi-changed-vars');
+ if(changed){
+  changed.replaceChildren();
+  if(!keys.length){const p=document.createElement('p');p.className='muted small';p.textContent='No variables changed from the original record.';changed.appendChild(p);}
+  else{
+   const ul=document.createElement('ul');ul.className='wi-changed-list';
+   keys.forEach(k=>{const li=document.createElement('li');li.textContent=(FIELD_LABELS[k]||k)+': '+fmtField(currentModel(),k,emp[k])+' → '+fmtField(currentModel(),k,changes[k]);ul.appendChild(li);});
+   changed.appendChild(ul);
+  }
+ }
+ const message=$('#wi-model-explanation');
+ if(message)message.textContent='Model-estimated risk changed under this scenario. This is a model association, not a causal claim or a promised retention outcome.';
+}
+function requestTrainedWhatif(){
+ const requestSeq=++state.wiSeq;
+ if(!trainedModelAvailable(currentModel()))return;
+ const got=whatifModified();if(!got)return;
+ const seq=requestSeq;
+ const modelId=currentModel().id;
+ const signature=whatifSignature(got.emp,got.mod);
+ state.whatifTrainedResult=null;
+ const message=$('#wi-model-explanation');if(message)message.textContent='Calculating with the trained model…';
+  const chip=$('#wi-chip');if(chip)chip.innerHTML='<span class="chip">Calculating with trained model…</span>';
+ const save=$('#whatif-save-button');if(save)save.disabled=true;
+ api('/predict/batch',{method:'POST',body:JSON.stringify({employees:[got.emp,got.mod]})}).then(function(out){
+   if(seq!==state.wiSeq||modelId!==currentModel().id||got.emp.id!==whatif.empId)return;
+  const pair=out.predictions||[];
+  if(pair.length!==2)throw new Error('The trained model did not return both scenario probabilities.');
+  const base=Number(pair[0].attrition_probability),next=Number(pair[1].attrition_probability);
+  if(!Number.isFinite(base)||!Number.isFinite(next))throw new Error('The trained model returned an invalid probability.');
+  const gb=$('#wi-gauge-base'),gn=$('#wi-gauge-new'),chip=$('#wi-chip');
+  if(gb)gb.innerHTML=gaugeSVG(base);
+  if(gn)gn.innerHTML=gaugeSVG(next);
+  if(chip)chip.innerHTML=changeChip(base,next);
+  state.whatifTrainedResult={empId:got.emp.id,signature:signature,changes:collectChanges(currentModel(),got.emp,got.mod),original:base,scenario:next,riskBefore:pair[0].risk_level,riskAfter:pair[1].risk_level};
+  updateWhatifResultDOM(base,next,pair[0].risk_level,pair[1].risk_level,got.emp,got.mod);
+  if(save)save.disabled=false;
+ }).catch(function(error){
+   if(seq!==state.wiSeq||modelId!==currentModel().id||got.emp.id!==whatif.empId)return;
+  const output=$('#wi-model-explanation');if(output)output.textContent='Trained-model calculation unavailable: '+error.message;
+  if(save)save.disabled=true;
+ });
+}
+function updateWhatifNumbers(){
+ const got=whatifModified();if(!got)return;
+ const m=currentModel();
+ if(trainedModelAvailable(m)){
+  const original=state.trainedScores&&state.trainedScores[got.emp.id];
+  const changes=collectChanges(m,got.emp,got.mod),keys=Object.keys(changes);
+  const changed=$('#wi-changed-vars');
+  if(changed){
+   changed.replaceChildren();
+   if(!keys.length){const p=document.createElement('p');p.className='muted small';p.textContent='No variables changed from the original record.';changed.appendChild(p);}
+   else{const ul=document.createElement('ul');ul.className='wi-changed-list';keys.forEach(k=>{const li=document.createElement('li');li.textContent=(FIELD_LABELS[k]||k)+': '+fmtField(m,k,got.emp[k])+' → '+fmtField(m,k,changes[k]);ul.appendChild(li);});changed.appendChild(ul);}
+  }
+  if(original!=null){const o=$('#wi-original-prob');if(o)o.textContent=fmtPct(original,2);const before=$('#wi-level-before');if(before)before.textContent='Risk level: '+riskLevel(original);}
+  const n=$('#wi-new-prob'),d=$('#wi-prob-change'),after=$('#wi-level-after'),message=$('#wi-model-explanation'),save=$('#whatif-save-button');
+  const chip=$('#wi-chip');if(chip)chip.innerHTML='<span class="chip">Calculating with trained model…</span>';
+  if(n)n.textContent='Calculating…';if(d)d.textContent='Calculating…';if(after)after.textContent='Risk level: Calculating…';
+  if(message)message.textContent='Model-estimated risk is being recalculated for this scenario. Changes are model associations, not causal claims.';
+  if(save)save.disabled=true;
+  return;
+ }
+ const base=scoreEmployee(m,got.emp),np=scoreEmployee(m,got.mod);
+ const gb=$('#wi-gauge-base'),gn=$('#wi-gauge-new'),ch=$('#wi-chip'),rs=$('#wi-reasons');
+ if(gb)gb.innerHTML=gaugeSVG(base);
+ if(gn)gn.innerHTML=gaugeSVG(np);
+ if(ch)ch.innerHTML=changeChip(base,np);
+ if(rs)rs.innerHTML=reasonsDiff(m,got.emp,got.mod);
+}
+function collectChanges(m,emp,mod){
+ const ch={};
+ whatifFields(m).forEach(k=>{if(emp[k]!==mod[k])ch[k]=mod[k];});
+ return ch;
+}
+VIEWS.whatif={
+ render(){
+  const m=currentModel();
+  if(!employees().length)return '<div class="page-head"><h1>What-if</h1></div>'+emptyHTML('No employees yet','What-if works on employee records. Add employees first.',[{action:'goto',to:'add',label:'Add / Import employees',primary:true}]);
+  const opts=employees().map((e,i)=>'<option value="'+esc(displayName(e,i))+'"></option>').join('');
+  let body='';
+  const emp=findEmp(whatif.empId);
+  if(!emp){
+   body='<div class="card"><label>Choose an employee<input class="input" id="wi-search" list="wi-list" placeholder="Type a name…" aria-label="Choose an employee for what-if"><datalist id="wi-list">'+opts+'</datalist></label><p class="muted small">Pick someone to see how changes would affect their risk. The real record is never changed.</p></div>';
+  }else{
+   const idx=employees().indexOf(emp);
+   const fields=whatifFields(m);
+   fields.forEach(k=>{if(!(k in whatif.vals))whatif.vals[k]=emp[k];});
+   const got=whatifModified();
+    const trained=trainedModelAvailable(m);
+    const trainedResult=trained?currentTrainedWhatif(emp,got.mod):null;
+    const noChanges=Object.keys(collectChanges(m,emp,got.mod)).length===0;
+    const storedOriginal=hasTrainedEmployeeScore(m,emp)?state.trainedScores[emp.id]:null;
+    const base=trained?(trainedResult?trainedResult.original:(storedOriginal==null?null:storedOriginal)):scoreEmployee(m,emp);
+    const np=trained?(trainedResult?trainedResult.scenario:(noChanges?base:null)):scoreEmployee(m,got.mod);
+    const riskBefore=trained?(trainedResult&&trainedResult.riskBefore||'Calculating…'):riskLevel(base);
+    const riskAfter=trained?(trainedResult&&trainedResult.riskAfter||(noChanges&&base!==null?riskLevel(base):'Calculating…')):riskLevel(np);
+    const gauge=(id,value)=>'<div id="'+id+'">'+(value==null?'<p class="muted small">Calculating with the trained model…</p>':gaugeSVG(value))+'</div>';
+   const editors=fields.map(k=>{
+    if(m.num[k]){
+     const f=m.num[k];
+     return '<div class="wi-field"><div class="wi-top"><label for="wi-'+esc(k)+'">'+esc(FIELD_LABELS[k]||k)+'</label><output class="mono" id="wi-out-'+esc(k)+'">'+esc(fmtField(m,k,whatif.vals[k]))+'</output></div>'
+      +'<input type="range" class="wi-slider" id="wi-'+esc(k)+'" data-k="'+esc(k)+'" min="'+f.min+'" max="'+f.max+'" step="1" value="'+Number(whatif.vals[k])+'"></div>';
+    }
+    return '<div class="wi-field"><label for="wi-'+esc(k)+'">'+esc(FIELD_LABELS[k]||k)+'</label><select class="input wi-select" id="wi-'+esc(k)+'" data-k="'+esc(k)+'">'
+     +Object.keys(m.cat[k]).map(v=>'<option value="'+esc(v)+'"'+(whatif.vals[k]===v?' selected':'')+'>'+esc(valueLabel(k,v))+'</option>').join('')+'</select></div>';
+   }).join('');
+    body='<div class="callout warn small">'+WARNING_TEXT+'</div>'
+     +(!trained?'<div class="callout warn small">The trained IBM model is unavailable in this session. Values below use the bundled coefficient estimate.</div>':'')
+    +'<div class="card"><label>Employee<input class="input" id="wi-search" list="wi-list" value="'+esc(displayName(emp,idx))+'" aria-label="Choose an employee for what-if"><datalist id="wi-list">'+opts+'</datalist></label></div>'
+    +'<div class="grid-2"><section class="card"><h3>Changeable fields</h3><p class="muted small">Only things a company can change appear here — never tenure, role, age or education.</p>'+editors+'</section>'
+     +'<section class="card"><h3>Original vs scenario</h3><div class="wi-gauges">'
+     +'<div><h4>Original</h4>'+gauge('wi-gauge-base',base)+'</div>'
+     +'<div><h4>Scenario</h4>'+gauge('wi-gauge-new',np)+'</div></div>'
+     +'<p style="text-align:center" id="wi-chip">'+(base==null||np==null?'<span class="chip">Calculating…</span>':changeChip(base,np))+'</p>'
+     +'<div id="wi-result-summary">'+whatifResultsMarkup(emp,got.mod,base,np,trained&&!trainedResult,riskBefore,riskAfter)+'</div>'
+     +'<div id="wi-reasons">'+(trained?'<p class="muted small">Model-estimated risk changed under this scenario. Changed variables are listed above. This does not show causality.</p>':reasonsDiff(m,emp,got.mod))+'</div>'
+    +'<div class="quick" style="margin-top:12px"><button class="btn" data-action="whatif-reset">'+icon('undo',15)+' Reset</button>'
+    +'<button class="btn" data-action="whatif-apply">'+icon('check',15)+' Apply all company actions</button></div></section></div>'
+     +'<section class="card"><h3>Save this scenario</h3><form id="whatif-save-form" class="quick"><input class="input" name="note" placeholder="Note (e.g. \'If we cap overtime\')" aria-label="Scenario note"><button class="btn btn-primary" id="whatif-save-button" type="submit"'+(trained&&!trainedResult?' disabled':'')+'>Save scenario</button></form>'
+    +'<p class="muted small">Saving a scenario never changes the real employee record.</p></section>';
+  }
+  const scs=scenarios();
+  body+='<section class="card"><h3>Saved scenarios</h3>'
+   +(scs.length
+    ?'<div class="quick" style="margin-bottom:10px"><button class="btn" data-action="scenario-compare">Compare selected two</button><button class="btn btn-danger" data-action="scenario-clear">Clear all</button></div>'
+     +'<div class="table-wrap"><table class="table"><thead><tr><th scope="col"></th><th scope="col">Employee / group</th><th scope="col">Note</th><th scope="col">Saved</th><th scope="col">Risk</th><th scope="col"></th></tr></thead><tbody id="sc-list">'
+     +scs.map(s=>'<tr><td><input type="checkbox" data-sc-check data-id="'+s.id+'" aria-label="Select scenario"></td><td>'+esc(scenarioName(s))+'</td><td>'+esc(s.note||'—')+'</td><td class="mono small">'+fmtDate(s.date)+'</td><td class="mono">'+fmtPct(s.baseP)+' → '+fmtPct(s.newP)+'</td><td><button class="tb-icon" data-action="scenario-delete" data-id="'+s.id+'" aria-label="Delete scenario">'+icon('trash',15)+'</button></td></tr>').join('')
+     +'</tbody></table></div><div id="sc-compare" style="margin-top:14px"></div>'
+    :'<p class="muted">No saved scenarios yet. Run a what-if above and save it with a note.</p>')
+   +'</section>';
+  return '<div class="page-head"><h1>What-if</h1></div>'+body;
+ }
+};
+function saveWhatifScenario(form){
+ const got=whatifModified();
+ if(!got){toast('Choose an employee first.','alert');return;}
+ const m=currentModel();
+ const trained=trainedModelAvailable(m)?currentTrainedWhatif(got.emp,got.mod):null;
+ if(trainedModelAvailable(m)&&!trained){toast('Wait for the trained-model scenario estimate before saving.','alert');return;}
+ const note=String(new FormData(form).get('note')||'').trim();
+ scenarios().push({id:uid(),date:new Date().toISOString(),empId:got.emp.id,empName:displayName(got.emp,employees().indexOf(got.emp)),note:note,baseP:trained?trained.original:scoreEmployee(m,got.emp),newP:trained?trained.scenario:scoreEmployee(m,got.mod),changes:collectChanges(m,got.emp,got.mod)});
+ saveAccount();logAction('Saved what-if scenario'+(note?' "'+note+'"':''));
+ toast('Scenario saved');
+ renderView();
+}
+function scenarioName(s){
+ if(s.empId){
+  const idx=employees().findIndex(e=>e.id===s.empId);
+  if(idx>-1)return displayName(employees()[idx],idx);
+ }
+ return s.empName;
+}
+function compareScenarios(){
+ const ids=$$('#sc-list [data-sc-check]:checked').map(c=>c.dataset.id);
+ if(ids.length!==2){toast('Select exactly two scenarios to compare.','alert');return;}
+ const a=scenarios().find(s=>s.id===ids[0]),b=scenarios().find(s=>s.id===ids[1]);
+ if(!a||!b)return;
+ const m=currentModel();
+ const keys=[];
+ Object.keys(a.changes||{}).forEach(k=>{if(keys.indexOf(k)===-1)keys.push(k);});
+ Object.keys(b.changes||{}).forEach(k=>{if(keys.indexOf(k)===-1)keys.push(k);});
+  const typical=typicalEmployee(m);
+  const rows=keys.map(k=>'<tr><td>'+esc(FIELD_LABELS[k]||k)+'</td><td class="mono">'+esc(a.changes&&a.changes[k]!==undefined?fmtField(m,k,a.changes[k]):fmtField(m,k,typical[k]))+'</td><td class="mono">'+esc(b.changes&&b.changes[k]!==undefined?fmtField(m,k,b.changes[k]):fmtField(m,k,typical[k]))+'</td></tr>').join('');
+ $('#sc-compare').innerHTML='<h4>Compare: '+esc(scenarioName(a))+' vs '+esc(scenarioName(b))+'</h4>'
+  +'<div class="table-wrap"><table class="table"><thead><tr><th scope="col">Field</th><th scope="col">'+esc(trunc(a.note||'Scenario A',24))+'</th><th scope="col">'+esc(trunc(b.note||'Scenario B',24))+'</th></tr></thead><tbody>'+(rows||'<tr><td colspan="3" class="muted">No field differences.</td></tr>')+'</tbody></table></div>'
+  +'<p class="mono small">Risk: '+esc(scenarioName(a))+' '+fmtPct(a.baseP)+' → '+fmtPct(a.newP)+' · '+esc(scenarioName(b))+' '+fmtPct(b.baseP)+' → '+fmtPct(b.newP)+'</p>';
+}
+
+/* ===== INSIGHTS ===== */
+VIEWS.insights={
+ render(){
+  const m=currentModel();const cs=companyStats();
+  if(!cs.count)return '<div class="page-head"><h1>Insights</h1></div>'+emptyHTML('No employees yet','Insights need employee data. Add employees or load sample data first.',[{action:'goto',to:'add',label:'Add / Import employees',primary:true},{action:'sample',label:'Load sample data'}]);
+  const sc=scoredEmployees();
+  const actions=companyActions(m,employees());
+  let afterSum=0;employees().forEach(e=>{afterSum+=employeeProbability(m,e,'all');});
+  const afterAvg=afterSum/employees().length;
+  const maxDrop=actions.length?Math.max.apply(null,actions.map(a=>a.stats.avgDrop)):0;
+  return '<div class="page-head"><h1>Insights</h1><div class="quick">'
+   +'<button class="btn" data-action="export-csv">'+icon('download',15)+' Export CSV</button>'
+   +'<button class="btn" data-action="print-report">'+icon('printer',15)+' Print report</button></div></div>'
+   +'<div class="kpis">'
+   +kpi('Employees',fmtInt(cs.count),'in the current model')
+   +kpi('Average risk',fmtPct(cs.avg),'across all employees')
+    +kpi('High-risk people',fmtInt(cs.high),fmtPct(RISK_HIGH_BOUNDARY,0)+' or higher')
+   +kpi('Expected leavers',cs.expected.toFixed(1),'sum of all risk scores')
+   +'</div><div class="grid-2">'
+   +'<section class="card"><h3>Average risk by '+(m.deptKey===m.roleKey?'industry':'department')+'</h3><div id="ins-chart"></div></section>'
+   +'<section class="card"><h3>Risk distribution</h3><div id="ins-hist"></div></section></div>'
+   +'<section class="card"><h3>Company actions, ranked</h3><p class="muted small">Actions that would lower risk for the current employees, biggest effect first.</p>'
+   +(actions.length?actions.map(a=>'<div class="reason"><div class="reason-top"><span><b>'+esc(a.advice)+'</b><br><span class="muted small">'+a.stats.helped+' '+(a.stats.helped===1?'employee':'employees')+' helped · average drop '+(a.stats.avgDrop*100).toFixed(1)+' pp</span></span></div><div class="bar"><i style="width:'+(maxDrop?Math.max(4,a.stats.avgDrop/maxDrop*100):0).toFixed(0)+'%"></i></div></div>').join(''):'<p class="muted">No company action would reduce risk for the current employees.</p>')
+   +'</section>'
+   +'<div class="callout">If all actions were applied, average risk would fall from <b>'+fmtPct(cs.avg)+'</b> to <b>'+fmtPct(afterAvg)+'</b>.</div>'
+   +'<p class="muted small">'+CAUSE_TEXT+'</p>';
+ },
+ init(){
+  drawBarChart('#ins-chart',avgRiskByGroup(),{fmt:v=>fmtPct(v),alt:'Average risk by group'});
+  drawHistogram('#ins-hist',scoredEmployees().map(x=>x.p));
+ }
+};
+function csvCell(s){s=String(s);return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function downloadBlob(name,type,content){
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(new Blob([content],{type:type}));
+ a.download=name;a.click();
+ setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function exportCSV(){
+ const m=currentModel();const sc=scoredEmployees();
+ const lines=['name,'+m.roleKey+',risk,level,top_reasons'];
+ sc.slice().sort((a,b)=>b.p-a.p).forEach(x=>{
+  const reasons=reasonsFor(m,x.emp,TOP_LIST).map(r=>r.label).join('; ');
+  lines.push([displayName(x.emp,x.i),valueLabel(m.roleKey,x.emp[m.roleKey]),fmtPct(x.p),x.lvl,reasons].map(csvCell).join(','));
+ });
+ downloadBlob('attrition-insights.csv','text/csv',lines.join('\n'));
+ toast('CSV exported');
+}
+/* ===== PLANNER ===== */
+const planner={costs:{},replacement:REPLACEMENT_COST_DEFAULT,budget:0};
+VIEWS.planner={
+ render(){
+  const m=currentModel();
+  if(!employees().length)return '<div class="page-head"><h1>Planner</h1></div>'+emptyHTML('No employees yet','The planner needs employee data to estimate costs and savings.',[{action:'sample',label:'Load sample data',primary:true},{action:'goto',to:'add',label:'Add / Import employees'}]);
+  return '<div class="page-head"><h1>Planner</h1></div>'
+   +'<p class="muted">Type what each action would cost per employee and what replacing a leaver costs. The planner ranks actions by net saving and can pick a set that fits a budget.</p>'
+   +'<form id="planner-form" class="card"><h3>Costs</h3><div class="grid-2">'
+   +m.fix.map((a,i)=>'<label>Cost per employee for: <b>'+esc(actionAdvice(a))+'</b><div class="num-wrap"><span class="unit pre">$</span><input class="input" type="number" min="0" step="50" data-pk="'+i+'" value="'+(planner.costs[i]||0)+'"></div></label>').join('')
+   +'</div><div class="grid-2" style="margin-top:14px">'
+   +'<label>Cost of replacing one leaver<div class="num-wrap"><span class="unit pre">$</span><input class="input" type="number" min="0" step="100" id="pl-replacement" value="'+planner.replacement+'"></div></label>'
+   +'<label>Total budget (optional)<div class="num-wrap"><span class="unit pre">$</span><input class="input" type="number" min="0" step="100" id="pl-budget" placeholder="No limit"></div></label>'
+   +'</div></form><div id="planner-results" style="margin-top:20px"></div>';
+ },
+ init(){recalcPlanner();}
+};
+function recalcPlanner(){
+ planner.costs={};
+ $$('#planner-form [data-pk]').forEach(el=>{planner.costs[el.dataset.pk]=Number(el.value)||0;});
+ const rp=$('#pl-replacement'),pb=$('#pl-budget');
+ planner.replacement=rp?Number(rp.value)||0:REPLACEMENT_COST_DEFAULT;
+ planner.budget=pb?Number(pb.value)||0:0;
+ const el=$('#planner-results');if(el)el.innerHTML=plannerResultsHTML();
+}
+function plannerResultsHTML(){
+ const m=currentModel();const emps=employees();
+ const rows=m.fix.map((a,i)=>{
+  const s=actionStats(m,emps,a);
+  const cost=(planner.costs[i]||0)*s.helped;
+  const savings=s.prevented*planner.replacement;
+  const net=savings-cost;
+  return {advice:actionAdvice(a),helped:s.helped,prevented:s.prevented,cost,savings,net,roi:cost>0?net/cost:null};
+ }).sort((a,b)=>b.net-a.net);
+ if(!rows.length)return '<div class="card"><p class="muted">No company actions are available for this model.</p></div>';
+ const maxNet=Math.max.apply(null,rows.map(r=>r.net).concat([0]));
+ let html='<section class="card"><h3>Actions ranked by net saving '+infoTip('ROI = net saving ÷ cost. Shows "n/a" when the cost is 0.')+'</h3><div class="table-wrap"><table class="table"><thead><tr>'
+  +'<th scope="col">Action</th><th scope="col">Employees helped</th><th scope="col">Leavers prevented</th><th scope="col">Cost</th><th scope="col">Savings</th><th scope="col">Net</th><th scope="col">ROI</th><th scope="col"></th></tr></thead><tbody>'
+  +rows.map(r=>'<tr><td>'+esc(r.advice)+'</td><td class="mono">'+r.helped+'</td><td class="mono">'+r.prevented.toFixed(2)+'</td><td class="mono">'+fmtMoney(r.cost)+'</td><td class="mono">'+fmtMoney(r.savings)+'</td><td class="mono" style="color:'+(r.net>=0?'var(--green)':'var(--red)')+'"><b>'+fmtMoney(r.net)+'</b></td><td class="mono">'+(r.roi===null?'n/a':fmtPct(r.roi,0))+'</td><td style="min-width:120px"><div class="bar"><i style="width:'+(maxNet>0?Math.max(3,r.net/maxNet*100):3).toFixed(0)+'%"></i></div></td></tr>').join('')
+  +'</tbody></table></div></section>';
+ if(planner.budget>0){
+  const free=rows.filter(r=>r.cost===0&&r.net>0);
+  const paid=rows.filter(r=>r.cost>0).sort((a,b)=>(b.net/b.cost)-(a.net/a.cost));
+  let spent=0;const picked=free.slice();
+  paid.forEach(r=>{if(spent+r.cost<=planner.budget+1e-9){picked.push(r);spent+=r.cost;}});
+  picked.sort((a,b)=>b.net-a.net);
+  const totPrev=picked.reduce((s,r)=>s+r.prevented,0);
+  const totNet=picked.reduce((s,r)=>s+r.net,0);
+  html+='<section class="card"><h3>Best set within a budget of '+fmtMoney(planner.budget)+'</h3>'
+   +(picked.length
+    ?'<ul class="guide">'+picked.map(r=>'<li><b>'+esc(r.advice)+'</b> — cost '+fmtMoney(r.cost)+', prevents '+r.prevented.toFixed(2)+' leavers, net '+fmtMoney(r.net)+'</li>').join('')+'</ul><p>Total cost <b class="mono">'+fmtMoney(spent)+'</b> · leavers prevented <b class="mono">'+totPrev.toFixed(2)+'</b> · net saving <b class="mono">'+fmtMoney(totNet)+'</b></p>'
+    :'<p class="muted">No action fits within this budget.</p>')
+   +'</section>';
+ }
+ html+='<div class="callout warn">These are estimates. '+CAUSE_TEXT+'</div>';
+ return html;
+}
+
+/* ===== GROUP POLICY SIMULATOR ===== */
+const policy={group:'all',action:'all'};
+VIEWS.policy={
+ render(){
+  const m=currentModel();
+  if(!employees().length)return '<div class="page-head"><h1>Group policy simulator</h1></div>'+emptyHTML('No employees yet','The policy simulator needs employee data.',[{action:'sample',label:'Load sample data',primary:true},{action:'goto',to:'add',label:'Add / Import employees'}]);
+  const deptVals=Array.from(new Set(employees().map(e=>e[m.deptKey]))).sort();
+  const groupLabel=m.deptKey===m.roleKey?'Industry':'Department';
+  return '<div class="page-head"><h1>Group policy simulator</h1></div>'
+   +'<p class="muted">Pick a group and one action (or all actions) to see what would happen if the company applied it to that group.</p>'
+   +'<form id="policy-form" class="card"><div class="grid-2">'
+   +'<label>Group<select class="input" id="pol-group"><option value="all">All employees</option><option disabled>— Risk level —</option>'
+   +'<option value="risk:High"'+(policy.group==='risk:High'?' selected':'')+'>Risk level: High</option>'
+   +'<option value="risk:Medium"'+(policy.group==='risk:Medium'?' selected':'')+'>Risk level: Medium</option>'
+   +'<option value="risk:Low"'+(policy.group==='risk:Low'?' selected':'')+'>Risk level: Low</option>'
+   +'<option disabled>— '+groupLabel+' —</option>'
+   +deptVals.map(v=>'<option value="'+esc(v)+'"'+(policy.group===v?' selected':'')+'>'+esc(v)+'</option>').join('')
+   +'</select></label>'
+   +'<label>Action<select class="input" id="pol-action"><option value="all"'+(policy.action==='all'?' selected':'')+'>All actions (one after another)</option>'
+   +m.fix.map((a,i)=>'<option value="'+i+'"'+(policy.action===String(i)?' selected':'')+'>'+esc(actionAdvice(a))+'</option>').join('')
+   +'</select></label></div></form>'
+   +'<div id="policy-results" style="margin-top:20px"></div>'
+   +'<section class="card"><h3>Save as scenario</h3><form id="policy-save-form" class="quick"><input class="input" name="note" placeholder="Note (e.g. \'Remote work for Technology\')" aria-label="Scenario note"><button class="btn btn-primary" type="submit">Save as scenario</button></form></section>';
+ },
+ init(){recalcPolicy();}
+};
+function policyGroupEmps(){
+ const m=currentModel();let emps=employees();
+ if(policy.group==='all')return emps;
+ if(policy.group.indexOf('risk:')===0)return emps.filter(e=>riskLevel(scoreEmployee(m,e))===policy.group.slice(5));
+ return emps.filter(e=>e[m.deptKey]===policy.group);
+}
+function policyCalc(){
+ const m=currentModel();const emps=policyGroupEmps();
+ if(!emps.length)return null;
+ const before=emps.map(e=>employeeProbability(m,e));
+ const after=emps.map(e=>employeeProbability(m,e,policy.action==='all'?'all':String(policy.action)));
+ const expB=before.reduce((a,b)=>a+b,0),expA=after.reduce((a,b)=>a+b,0);
+ return {count:emps.length,avgB:expB/emps.length,avgA:expA/emps.length,expB,expA,prevented:expB-expA};
+}
+function recalcPolicy(){
+ const r=policyCalc();const el=$('#policy-results');if(!el)return;
+ if(!r){el.innerHTML='<div class="card"><p class="muted">No employees in this group.</p></div>';return;}
+ el.innerHTML='<div class="kpis">'
+  +kpi('Employees',fmtInt(r.count),'in this group')
+  +kpi('Expected leavers before',r.expB.toFixed(2),'sum of risk scores')
+  +kpi('Expected leavers after',r.expA.toFixed(2),'after the action')
+  +kpi('Leavers prevented',r.prevented.toFixed(2),'expected difference')
+  +'</div><div class="grid-2">'
+  +'<div class="card"><h3>Average risk</h3><p class="mono" style="font-size:22px">'+fmtPct(r.avgB)+' → '+fmtPct(r.avgA)+'</p></div>'
+  +'<div class="card"><h3>Change</h3><p class="mono" style="font-size:22px;color:var(--green)">−'+((r.avgB-r.avgA)*100).toFixed(1)+' pp average risk</p></div></div>'
+  +'<div class="callout">These are estimates. '+CAUSE_TEXT+'</div>';
+}
+function savePolicyScenario(form){
+ const r=policyCalc();
+ if(!r){toast('Nothing to save — no employees in this group.','alert');return;}
+ const note=String(new FormData(form).get('note')||'').trim();
+ scenarios().push({id:uid(),date:new Date().toISOString(),empId:null,empName:'Policy: '+(policy.group==='all'?'all employees':policy.group),note:note,baseP:r.avgB,newP:r.avgA,changes:{},policy:true});
+ saveAccount();logAction('Saved policy scenario'+(note?' "'+note+'"':''));
+ toast('Scenario saved');
+ form.reset();
+}
+
+/* ===== TRENDS ===== */
+VIEWS.trends={
+ render(){
+  const snaps=snapshots();const cs=companyStats();
+  return '<div class="page-head"><h1>Trends</h1><div class="quick">'
+   +'<button class="btn btn-primary" data-action="snapshot-save"'+(employees().length?'':' disabled')+'>'+icon('save',15)+' Save snapshot</button>'
+   +(snaps.length?'<button class="btn btn-danger" data-action="snapshot-clear">Clear all</button>':'')
+   +'</div></div>'
+   +(snaps.length
+    ?'<section class="card"><h3>Snapshots over time</h3><div id="trend-chart"></div></section>'
+     +'<section class="card"><h3>Snapshot history</h3><div class="table-wrap"><table class="table"><thead><tr><th scope="col">Date</th><th scope="col">Average risk</th><th scope="col">High-risk count</th><th scope="col">Expected leavers</th><th scope="col"></th></tr></thead><tbody>'
+     +snaps.map(s=>'<tr><td class="mono">'+fmtDate(s.date)+'</td><td class="mono">'+fmtPct(s.avg)+'</td><td class="mono">'+s.high+'</td><td class="mono">'+s.expected.toFixed(1)+'</td><td><button class="tb-icon" data-action="snapshot-delete" data-id="'+s.id+'" aria-label="Delete snapshot">'+icon('trash',15)+'</button></td></tr>').join('')
+     +'</tbody></table></div></section>'
+    :emptyHTML('No snapshots yet','Save a snapshot each month to see whether things are improving.',[{action:'snapshot-save',label:'Save snapshot',primary:true}]));
+ },
+ init(){
+  if(snapshots().length){
+   const pts=snapshots().slice().reverse().map(s=>({label:fmtDateShort(s.date),value:s.avg}));
+   drawLineChart('#trend-chart',pts);
+  }
+ }
+};
+function saveSnapshot(){
+ const cs=companyStats();
+ if(!cs.count){toast('Add employees before saving a snapshot.','alert');return;}
+ snapshots().push({id:uid(),date:new Date().toISOString(),avg:cs.avg,high:cs.high,expected:cs.expected});
+ saveAccount();logAction('Saved trend snapshot');
+ toast('Snapshot saved');
+ renderView();
+}
+
+/* ===== SETTINGS ===== */
+function selftestHTML(rows){
+ return '<div class="table-wrap"><table class="table"><thead><tr><th scope="col">Model</th><th scope="col">Check</th><th scope="col">Expected</th><th scope="col">Actual</th><th scope="col">Result</th></tr></thead><tbody>'
+  +rows.map(r=>'<tr><td>'+esc(r.modelName)+'</td><td>'+esc(r.label)+'</td><td class="mono">'+r.expected.toFixed(4)+'</td><td class="mono">'+r.actual.toFixed(4)+'</td><td>'+(r.pass?'<span class="chip chip-good">PASS</span>':'<span class="chip chip-bad">FAIL</span>')+'</td></tr>').join('')
+  +'</tbody></table></div>';
+}
+VIEWS.settings={
+ render(){
+  const m=currentModel();
+  return '<div class="page-head"><h1>Settings</h1></div>'
+   +'<div class="grid-2"><div class="card" id="about-model"><h3>About the model: '+esc(m.name)+'</h3><dl class="fields">'
+   +'<dt>Trained on</dt><dd>'+esc(MODEL_TRAINED_ON[m.id]||'A custom model imported by you.')+'</dd>'
+   +'<dt>Rows</dt><dd class="mono">'+fmtInt(m.n)+'</dd>'
+   +'<dt>Share who left</dt><dd class="mono">'+fmtPct(m.base_rate)+'</dd>'
+   +'<dt>Accuracy (CV AUC) '+infoTip('How well the model ranks leavers above stayers. 0.5 is a coin flip, 1.0 is perfect.')+'</dt><dd class="mono">'+m.cv_auc.toFixed(3)+'</dd>'
+   +'<dt>Top-10% precision '+infoTip('Of the riskiest 10% of employees the model flags, this share really did leave in the training data.')+'</dt><dd class="mono">'+fmtPct(m.top10_prec)+'</dd>'
+    +'<dt>Risk labels</dt><dd>Low: below '+fmtPct(metadataThresholds().low,0)+'; Medium: '+fmtPct(metadataThresholds().low,0)+' to below '+fmtPct(metadataThresholds().medium,0)+'; High: '+fmtPct(metadataThresholds().medium,0)+' or higher.</dd>'
+    +(state.modelMetadata?'<dt>Trained algorithm</dt><dd>'+esc(state.modelMetadata.algorithm)+'</dd><dt>Model version</dt><dd class="mono">'+esc(state.modelMetadata.model_version)+'</dd><dt>Test recall</dt><dd class="mono">'+esc(Number(state.modelMetadata.metrics.recall).toFixed(3))+'</dd><dt>Test F1</dt><dd class="mono">'+esc(Number(state.modelMetadata.metrics.f1).toFixed(3))+'</dd><dt>Test ROC-AUC</dt><dd class="mono">'+esc(Number(state.modelMetadata.metrics.roc_auc).toFixed(3))+'</dd>':'')
+   +'</dl>'
+   +(m.id==='industry'?'<div class="callout warn">This model\'s leaver rate is 47%, which is unrealistic. Trust the ranking of employees, not the exact percentages.</div>':'')
+   +'<div class="callout danger">'+WARNING_TEXT+'</div></div>'
+   +'<div class="card"><h3>Appearance &amp; privacy</h3>'
+   +'<label>Theme<select id="theme-select" class="input"><option value="system"'+(state.theme==='system'?' selected':'')+'>Follow system</option><option value="light"'+(state.theme==='light'?' selected':'')+'>Light</option><option value="dark"'+(state.theme==='dark'?' selected':'')+'>Dark</option></select></label>'
+   +'<div class="set-row">'+switchHTML('privacy-switch',state.privacy,'Privacy mode')+'<div><b>Privacy mode</b><p class="muted small">Every name becomes "Employee 001", "Employee 002"… in the order of the list — on every screen and in every export and printout.</p></div></div>'
+   +'<p class="muted small">The theme follows your system by default; your choice is remembered.</p></div></div>'
+   +'<div class="grid-2" style="margin-top:20px"><div class="card"><h3>Backup &amp; restore</h3>'
+   +'<p class="muted small">Download saves all records, scenarios and snapshots of this account as one JSON file.</p>'
+   +'<button class="btn" data-action="backup-download">'+icon('download',15)+' Download backup</button>'
+   +'<hr class="sep"><p class="muted small">Restore asks for the JSON backup file you downloaded here. It replaces the current data after you confirm.</p>'
+   +'<input type="file" id="backup-file" accept=".json" class="input" aria-label="Restore backup file"></div>'
+   +'<div class="card"><h3>Import model</h3>'
+   +'<p class="muted small">Add another model by pasting or uploading a JSON file with the same keys as the built-in models (name, intercept, num, cat, catbase, catdef, medians, hi, mid, base_rate, cv_auc, top10_prec, n, roleKey, deptKey, fix).</p>'
+   +'<textarea id="model-json" class="input mono" rows="5" placeholder="Paste a model JSON here…" aria-label="Model JSON"></textarea>'
+   +'<input type="file" id="model-file" accept=".json" class="input" aria-label="Upload model JSON file" style="margin-top:10px">'
+   +'<button class="btn btn-primary" data-action="model-add" style="margin-top:10px">Validate &amp; add model</button>'
+   +'<div id="model-msg"></div></div></div>'
+   +'<div class="card" style="margin-top:20px"><h3>Activity log</h3>'
+   +(state.log.length
+    ?'<ul class="log-list">'+state.log.map(e=>'<li><span class="mono small">'+fmtDate(e.time)+'</span> — '+esc(e.text)+'</li>').join('')+'</ul><button class="btn btn-danger" data-action="log-clear" style="margin-top:10px">Clear log</button>'
+    :'<p class="muted">No activity yet. Imports, deletes, clears, restores and snapshots are recorded here (last '+LOG_LIMIT+').</p>')
+   +'</div>'
+   +'<div class="card" style="margin-top:20px"><h3>Self-test</h3>'
+   +'<p class="muted small">Checks the scoring engine against known values for all three built-in models (tolerance ±0.003). It also runs silently at startup; a red banner appears if a check fails.</p>'
+   +'<button class="btn" data-action="run-selftest">Run self-test</button>'
+   +'<div id="selftest-results" style="margin-top:12px">'+selftestHTML(runSelfTest())+'</div></div>';
+ }
+};
+function runSelftestAction(){
+ const rows=runSelfTest();
+ const el=$('#selftest-results');if(el)el.innerHTML=selftestHTML(rows);
+ const failed=rows.filter(r=>!r.pass).length;
+ toast(failed?failed+' of '+rows.length+' self-test checks failed':'All '+rows.length+' self-test checks passed',failed?'alert':'check');
+}
+
+/* ===== FEATURES: command palette, tour, backup, model import ===== */
+let paletteOpen=false,paletteIdx=0,paletteItems=[];
+function openPalette(){
+ paletteOpen=true;paletteIdx=0;
+ $('#palette-root').innerHTML='<div class="palette-backdrop" data-action="palette-close"></div><div class="palette card" role="dialog" aria-modal="true" aria-label="Command palette">'
+  +'<input id="palette-input" class="input" placeholder="Jump to a screen, find an employee, switch model…" autocomplete="off"><ul id="palette-list" role="listbox"></ul></div>';
+ const inp=$('#palette-input');
+ inp.addEventListener('input',()=>renderPaletteResults(inp.value));
+ inp.focus();
+ renderPaletteResults('');
+}
+function closePalette(){paletteOpen=false;$('#palette-root').innerHTML='';}
+function paletteCommands(){
+ const cmds=[];const m=currentModel();
+ SCREENS.forEach(s=>cmds.push({label:'Go to '+s.name,group:'Screen',run:()=>{location.hash='#/'+s.id;}}));
+ employees().slice(0,200).forEach((e,i)=>cmds.push({label:displayName(e,i),group:'Employee',hint:valueLabel(m.roleKey,e[m.roleKey]),run:()=>{location.hash='#/employees';setTimeout(()=>openEmployeeDrawer(e.id),60);}}));
+ allModels().forEach(x=>cmds.push({label:'Switch to model '+x.name,group:'Model',run:()=>switchModel(x.id)}));
+ cmds.push({label:isDark()?'Switch to light mode':'Switch to dark mode',group:'Action',run:()=>{setTheme(isDark()?'light':'dark');renderApp();}});
+ cmds.push({label:state.privacy?'Turn off privacy mode':'Turn on privacy mode',group:'Action',run:()=>togglePrivacy()});
+ return cmds;
+}
+function renderPaletteResults(q){
+ q=(q||'').toLowerCase();
+ paletteItems=paletteCommands().filter(c=>!q||(c.label+' '+(c.hint||'')+' '+c.group).toLowerCase().indexOf(q)>-1);
+ if(paletteIdx>=paletteItems.length)paletteIdx=0;
+ const list=$('#palette-list');if(!list)return;
+ if(!paletteItems.length){list.innerHTML='<li class="muted" style="cursor:default">No matches.</li>';return;}
+ list.innerHTML=paletteItems.map((c,i)=>'<li role="option" aria-selected="'+(i===paletteIdx)+'" data-pidx="'+i+'" data-action="palette-run"><span class="p-group">'+esc(c.group)+'</span><span>'+esc(c.label)+'</span>'+(c.hint?'<span class="p-hint">'+esc(c.hint)+'</span>':'')+'</li>').join('');
+}
+function paletteKey(e){
+ if(e.key==='ArrowDown'){e.preventDefault();paletteIdx=(paletteIdx+1)%paletteItems.length;paintPaletteSel();}
+ else if(e.key==='ArrowUp'){e.preventDefault();paletteIdx=(paletteIdx-1+paletteItems.length)%paletteItems.length;paintPaletteSel();}
+ else if(e.key==='Enter'){e.preventDefault();const c=paletteItems[paletteIdx];if(c){closePalette();c.run();}}
+}
+function paintPaletteSel(){
+ $$('#palette-list li[data-pidx]').forEach(li=>{
+  const sel=+li.dataset.pidx===paletteIdx;
+  li.setAttribute('aria-selected',String(sel));
+  if(sel)li.scrollIntoView({block:'nearest'});
+ });
+}
+const TOUR_STEPS=[
+ {title:'Welcome to Attrivue',text:'Pick a model in the top bar — it decides how risk is scored. You can switch models any time; each keeps its own data.'},
+ {title:'Add your employees',text:'Use Add / Import to enter people manually, import a CSV file, or load 25 sample employees to explore.'},
+ {title:'Explore what-if and insights',text:'What-if shows what happens if things change for one person. Insights shows patterns for the whole company. Press Ctrl+K (or Cmd+K) any time to search.'}
+];
+let tourStep=0;
+function showTour(){tourStep=0;renderTour();}
+function renderTour(){
+ const step=TOUR_STEPS[tourStep];
+ $('#tour-root').innerHTML='<div class="tour-backdrop"></div><div class="tour card" role="dialog" aria-modal="true" aria-label="Tour step '+(tourStep+1)+'">'
+  +'<div class="tour-step">Step '+(tourStep+1)+' of '+TOUR_STEPS.length+'</div><h3>'+esc(step.title)+'</h3><p class="muted">'+esc(step.text)+'</p>'
+  +'<div class="quick">'+(tourStep>0?'<button class="btn" data-action="tour-prev">Back</button>':'')
+  +(tourStep<TOUR_STEPS.length-1?'<button class="btn btn-primary" data-action="tour-next">Next</button>':'<button class="btn btn-primary" data-action="tour-done">Done</button>')
+  +'<button class="btn btn-ghost" data-action="tour-skip">Skip tour</button></div></div>';
+ trapFocus($('#tour-root .tour'));
+}
+function endTour(){$('#tour-root').innerHTML='';state.tourDone=true;saveAccount();}
+function downloadBackup(){
+ const payload={app:APP_NAME,schemaVersion:SCHEMA_VERSION,exported:new Date().toISOString(),modelId:state.modelId,models:state.models,customModels:state.customModels,log:state.log,theme:state.theme,privacy:state.privacy,tourDone:state.tourDone};
+ downloadBlob('attrition-backup.json','application/json',JSON.stringify(payload,null,2));
+ logAction('Downloaded backup');
+ toast('Backup downloaded');
+}
+function handleBackupFile(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>applyBackupText(String(reader.result||''),file.name);
+ reader.onerror=()=>toast('Could not read that file.','alert');
+ reader.readAsText(file);
+}
+async function applyBackupText(text,name){
+ let obj;
+ try{obj=JSON.parse(text);}catch(e){toast('That file is not valid JSON.','alert');return;}
+ if(!obj||typeof obj.models!=='object'||!obj.models){toast('That file does not look like an Attrivue backup.','alert');return;}
+ const ok=await confirmDialog('Restore the backup "'+name+'"? This replaces all current records, scenarios and snapshots.','Restore backup',false);
+ if(!ok)return;
+ state.models=obj.models||{};state.customModels=obj.customModels||[];state.log=obj.log||[];
+ state.theme=obj.theme||'system';state.privacy=!!obj.privacy;
+ registerCustomModels();
+ if(!MODELS_BY_ID[state.modelId])state.modelId='ibm';
+ invalidateCache();applyTheme();saveAccount();renderApp();
+ logAction('Restored backup from file');
+ toast('Backup restored');
+}
+function validateModel(o){
+ const errs=[];
+ if(!o||typeof o!=='object'||Array.isArray(o))return ['The file does not contain a JSON object.'];
+ if(typeof o.name!=='string'||!o.name.trim())errs.push('"name" must be a non-empty string.');
+ ['intercept','hi','mid','base_rate','cv_auc','top10_prec','n'].forEach(k=>{if(typeof o[k]!=='number'||!Number.isFinite(o[k]))errs.push('"'+k+'" must be a number.');});
+ if(!o.num||typeof o.num!=='object')errs.push('"num" must be an object of numeric fields.');
+ else Object.keys(o.num).forEach(k=>{const f=o.num[k];if(!f||typeof f!=='object'){errs.push('"num.'+k+'" must be an object.');return;}['mean','scale','coef','min','max'].forEach(p=>{if(typeof f[p]!=='number'||!Number.isFinite(f[p]))errs.push('"num.'+k+'.'+p+'" must be a number.');});});
+ if(!o.cat||typeof o.cat!=='object')errs.push('"cat" must be an object of category fields.');
+ else Object.keys(o.cat).forEach(k=>{const c=o.cat[k];if(!c||typeof c!=='object'){errs.push('"cat.'+k+'" must be an object.');return;}Object.keys(c).forEach(v=>{if(typeof c[v]!=='number'||!Number.isFinite(c[v]))errs.push('"cat.'+k+'.'+v+'" must be a number.');});});
+ ['catbase','medians'].forEach(key=>{
+  if(!o[key]||typeof o[key]!=='object')errs.push('"'+key+'" must be an object.');
+  else Object.keys(o[key]).forEach(k=>{if(typeof o[key][k]!=='number'||!Number.isFinite(o[key][k]))errs.push('"'+key+'.'+k+'" must be a number.');});
+ });
+ if(!o.catdef||typeof o.catdef!=='object')errs.push('"catdef" must be an object.');
+ if(typeof o.roleKey!=='string'||!o.roleKey)errs.push('"roleKey" must be a string.');
+ if(typeof o.deptKey!=='string'||!o.deptKey)errs.push('"deptKey" must be a string.');
+ if(!Array.isArray(o.fix))errs.push('"fix" must be an array of company actions.');
+ else o.fix.forEach((a,i)=>{if(!a||typeof a.k!=='string'||['set','min','max','mul','up'].indexOf(a.type)===-1)errs.push('"fix['+i+']" must have a field "k" and a valid "type" (set, min, max, mul, up).');});
+ return errs;
+}
+let pendingModelFile='';
+function handleModelFile(file){
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=()=>{pendingModelFile=String(reader.result||'');const ta=$('#model-json');if(ta)ta.value=pendingModelFile;toast('File loaded — press "Validate & add model".');};
+ reader.onerror=()=>toast('Could not read that file.','alert');
+ reader.readAsText(file);
+}
+function handleModelAdd(){
+ const ta=$('#model-json'),msg=$('#model-msg');
+ const text=((ta&&ta.value)||'').trim()||pendingModelFile;
+ if(!text){msg.innerHTML='<p class="c-red">Paste a model JSON or upload a file first.</p>';return;}
+ let obj;
+ try{obj=JSON.parse(text);}catch(e){msg.innerHTML='<p class="c-red">That is not valid JSON: '+esc(e.message)+'</p>';return;}
+ const errs=validateModel(obj);
+ if(errs.length){msg.innerHTML='<p class="c-red">The model was rejected:</p><ul class="rej">'+errs.map(e=>'<li>'+esc(e)+'</li>').join('')+'</ul>';return;}
+ obj.id=slug(obj.name);let n=2;
+ while(MODELS_BY_ID[obj.id]){obj.id=slug(obj.name)+'-'+n;n++;}
+ obj.name=obj.name.trim();
+ state.customModels.push(obj);MODELS_BY_ID[obj.id]=obj;
+ saveAccount();logAction('Imported model "'+obj.name+'"');
+ msg.innerHTML='<p class="c-green">Model "'+esc(obj.name)+'" added. It appears in the model selector.</p>';
+ if(ta)ta.value='';pendingModelFile='';
+ toast('Model "'+obj.name+'" added');
+ renderApp();
+}
+
+/* ===== THEME & PRIVACY ===== */
+function isDark(){
+ if(state.theme==='dark')return true;
+ if(state.theme==='light')return false;
+ return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+function applyTheme(){document.documentElement.dataset.theme=isDark()?'dark':'light';}
+function setTheme(t){state.theme=t;applyTheme();saveAccount();}
+function togglePrivacy(){
+ state.privacy=!state.privacy;saveAccount();renderApp();
+ toast(state.privacy?'Privacy mode on — names are hidden everywhere.':'Privacy mode off.');
+}
+function switchModel(id){
+ if(!MODELS_BY_ID[id])return;
+ state.modelId=id;state.trainedScores=null;state.trainedAfter=null;csvResult=null;csvPendingText='';csvPendingName='';invalidateCache();saveAccount();renderApp();refreshTrainedScores();
+}
+
+/* ===== EVENT DELEGATION ===== */
+function hideUserMenu(){const m=$('#user-menu');if(m)m.hidden=true;const b=$('#user-btn');if(b)b.setAttribute('aria-expanded','false');}
+function handleAction(action,t){
+ switch(action){
+  case 'login-tab':loginViewMode=t.dataset.mode==='signup'?'signup':'signin';renderApp();break;
+  case 'toggle-pw':{const inp=t.closest('.pw-wrap').querySelector('input');const show=inp.type==='password';inp.type=show?'text':'password';t.innerHTML=icon(show?'eye-off':'eye',16);t.setAttribute('aria-label',show?'Hide password':'Show password');break;}
+  case 'open-palette':openPalette();break;
+  case 'palette-close':closePalette();break;
+  case 'palette-run':{const c=paletteItems[+t.dataset.pidx];if(c){closePalette();c.run();}break;}
+  case 'toggle-privacy':togglePrivacy();break;
+  case 'toggle-theme':setTheme(isDark()?'light':'dark');renderApp();break;
+  case 'toggle-usermenu':{const menu=$('#user-menu');const open=menu.hidden;menu.hidden=!open;t.setAttribute('aria-expanded',String(open));break;}
+  case 'signout':signOut();break;
+  case 'goto':{
+   const target='#/'+(t.dataset.to||'dashboard')+(t.dataset.tab?'?tab='+t.dataset.tab:'');
+   if(location.hash===target)renderView();else location.hash=target;
+   break;
+  }
+  case 'about-model':location.hash='#/settings';setTimeout(()=>{const el=$('#about-model');if(el)el.scrollIntoView({behavior:'smooth',block:'start'});},80);break;
+  case 'drawer-close':closeDrawer();break;
+  case 'modal-resolve':resolveModal(t.dataset.v==='1');break;
+  case 'add-tab':{
+   const tab=t.dataset.tab;
+   if(['form','csv','sample'].indexOf(tab)===-1)break;
+   const target='#/add?tab='+tab;
+   if(location.hash===target)renderView();else location.hash=target;
+   break;
+  }
+  case 'sample':{
+   const emps=generateSample();
+   const unique=new Set(emps.map(emp=>fmtPct(scoreEmployee(currentModel(),emp)))).size;
+   addEmployees(emps,'Loaded');
+   toast('Loaded '+emps.length+' sample employees with '+unique+' different leaving percentages.');
+   if(location.hash==='#/dashboard')renderView();else location.hash='#/dashboard';
+   break;
+  }
+  case 'csv-browse':$('#csv-file').click();break;
+  case 'csv-template':downloadCsvTemplate();break;
+  case 'csv-parse':csvParseAction();break;
+  case 'csv-confirm':csvConfirmAction();break;
+  case 'csv-cancel':csvResult=null;csvPendingText='';csvPendingName='';renderView();break;
+  case 'sort':{const k=t.dataset.key;if(empView.sortKey===k)empView.sortDir*=-1;else{empView.sortKey=k;empView.sortDir=(k==='p'?-1:1);}empView.page=0;renderView();break;}
+  case 'page-prev':empView.page=Math.max(0,empView.page-1);renderView();break;
+  case 'page-next':empView.page=empView.page+1;renderView();break;
+  case 'emp-reset-filters':empView.q='';empView.risk='';empView.group='';empView.page=0;renderView();break;
+  case 'emp-row':openEmployeeDrawer(t.dataset.id);break;
+  case 'emp-delete':deleteOneEmployee(t.dataset.id);break;
+  case 'emp-bulk':deleteSelectedEmployees();break;
+  case 'emp-clear':clearAllEmployees();break;
+  case 'whatif-open':closeDrawer();whatif.empId=t.dataset.id;whatif.vals={};if(location.hash.indexOf('#/whatif')===0)renderView();else location.hash='#/whatif';break;
+  case 'whatif-reset':whatif.vals={};renderView();break;
+  case 'whatif-apply':{const m=currentModel();const emp=findEmp(whatif.empId);if(!emp)break;const mod=applyAllActions(m,emp);whatif.vals={};whatifFields(m).forEach(k=>{whatif.vals[k]=mod[k];});renderView();toast('Applied all company actions to the what-if copy.');break;}
+  case 'scenario-delete':modelData().scenarios=modelData().scenarios.filter(s=>s.id!==t.dataset.id);saveAccount();logAction('Deleted a scenario');toast('Scenario deleted');renderView();break;
+  case 'scenario-clear':confirmDialog('Delete all saved scenarios?','Clear scenarios').then(ok=>{if(!ok)return;modelData().scenarios=[];saveAccount();logAction('Cleared all scenarios');toast('Scenarios cleared');renderView();});break;
+  case 'scenario-compare':compareScenarios();break;
+  case 'export-csv':exportCSV();break;
+  case 'print-report':window.print();break;
+  case 'snapshot-save':saveSnapshot();break;
+  case 'snapshot-delete':modelData().snapshots=modelData().snapshots.filter(s=>s.id!==t.dataset.id);saveAccount();logAction('Deleted a snapshot');toast('Snapshot deleted');renderView();break;
+  case 'snapshot-clear':confirmDialog('Delete all snapshots?','Clear snapshots').then(ok=>{if(!ok)return;modelData().snapshots=[];saveAccount();logAction('Cleared all snapshots');toast('Snapshots cleared');renderView();});break;
+  case 'retention-guide':openRetentionGuide(t.dataset.id);break;
+  case 'run-selftest':runSelftestAction();break;
+  case 'backup-download':downloadBackup();break;
+  case 'model-add':handleModelAdd();break;
+  case 'log-clear':state.log=[];saveAccount();toast('Activity log cleared');renderView();break;
+  case 'tour-next':tourStep++;renderTour();break;
+  case 'tour-prev':tourStep=Math.max(0,tourStep-1);renderTour();break;
+  case 'tour-done':case 'tour-skip':endTour();break;
+  case 'more-menu':{const menu=$('#more-menu');if(menu){const open=menu.hidden;menu.hidden=!open;t.setAttribute('aria-expanded',String(open));}break;}
+  case 'toggle-switch':{
+   const sw=$('#'+t.dataset.target);
+   const on=sw.getAttribute('aria-checked')!=='true';
+   sw.setAttribute('aria-checked',String(on));
+   if(t.dataset.target==='privacy-switch'){state.privacy=on;saveAccount();toast(on?'Privacy mode on — names are hidden everywhere.':'Privacy mode off.');renderApp();}
+   break;
+  }
+ }
+}
+function onDocClick(e){
+ if(!e.target.closest('.user-menu'))hideUserMenu();
+ if(!e.target.closest('.more-wrap')){const mm=$('#more-menu');if(mm)mm.hidden=true;}
+ const t=e.target.closest('[data-action]');
+ if(t)handleAction(t.dataset.action,t);
+}
+const debouncedEmpFilter=debounce(v=>{empView.q=v;empView.page=0;renderView();},DEBOUNCE_MS);
+function onDocInput(e){
+ const t=e.target;
+ if(t.id==='emp-search'){debouncedEmpFilter(t.value);return;}
+ if(t.id==='palette-input')return;
+ if(t.classList.contains('wi-slider')){
+  whatif.vals[t.dataset.k]=t.value;
+  const out=$('#wi-out-'+t.dataset.k);
+  if(out)out.textContent=fmtField(currentModel(),t.dataset.k,t.value);
+  scheduleWhatifUpdate();return;
+ }
+ if(t.classList.contains('wi-select')){whatif.vals[t.dataset.k]=t.value;scheduleWhatifUpdate();return;}
+ if(t.closest&&t.closest('#add-form')){
+  t.classList.remove('invalid');
+  const err=$('#form-error');
+  if(err&&!err.hidden&&!$('#add-form').querySelector('.invalid'))err.hidden=true;
+ }
+}
+function onDocChange(e){
+ const t=e.target;
+ if(t.id==='model-select'){switchModel(t.value);return;}
+ if(t.id==='theme-select'){setTheme(t.value);return;}
+ if(t.id==='wi-search'){
+  const name=t.value.trim();
+  const idx=employees().findIndex((e,i)=>displayName(e,i)===name);
+  if(idx>-1){whatif.empId=employees()[idx].id;whatif.vals={};renderView();}
+  else toast('No employee with that name.','alert');
+  return;
+ }
+ if(t.id==='csv-file'){handleCsvFile(t.files[0]);return;}
+ if(t.id==='backup-file'){handleBackupFile(t.files[0]);return;}
+ if(t.id==='model-file'){handleModelFile(t.files[0]);return;}
+ if(t.id==='emp-check-all'){
+  const rows=currentPageRows();
+  rows.forEach(r=>{if(t.checked)empView.selected.add(r.emp.id);else empView.selected.delete(r.emp.id);});
+  syncBulkBtn();return;
+ }
+ if(t.matches('[data-check]')){
+  const id=t.dataset.id;
+  if(t.checked)empView.selected.add(id);else empView.selected.delete(id);
+  syncBulkBtn();syncCheckAll();return;
+ }
+ if(t.matches('[data-filter]')){empView[t.dataset.filter]=t.value;empView.page=0;renderView();return;}
+ if(t.closest&&t.closest('#planner-form')){recalcPlanner();return;}
+ if(t.closest&&t.closest('#policy-form')){policy.group=$('#pol-group').value;policy.action=$('#pol-action').value;recalcPolicy();return;}
+}
+function onDocSubmit(e){
+ if(e.target.id==='login-form'){e.preventDefault();handleLogin(e.target);}
+ else if(e.target.id==='add-form'){e.preventDefault();handleAddForm(e.target);}
+ else if(e.target.id==='whatif-save-form'){e.preventDefault();saveWhatifScenario(e.target);}
+ else if(e.target.id==='policy-save-form'){e.preventDefault();savePolicyScenario(e.target);}
+ else{e.preventDefault();}
+}
+function onDocKey(e){
+ if((e.ctrlKey||e.metaKey)&&String(e.key).toLowerCase()==='k'){e.preventDefault();if(paletteOpen)closePalette();else openPalette();return;}
+ if(e.key==='Escape'){
+  if(paletteOpen)closePalette();
+  else if($('#modal-root').children.length)resolveModal(false);
+  else if($('#drawer-root').children.length)closeDrawer();
+  else hideUserMenu();
+  return;
+ }
+ if(paletteOpen&&e.target.id==='palette-input'){paletteKey(e);return;}
+}
+
+/* ===== BOOT ===== */
+function showBanner(msg){
+ let b=$('#banner');
+ if(!b){document.body.insertAdjacentHTML('beforeend','<div class="banner" id="banner" role="alert"></div>');b=$('#banner');}
+ b.innerHTML=icon('alert',16)+'<span>'+esc(msg)+'</span><button data-action="goto" data-to="settings">Open Settings</button>';
+ b.hidden=false;
+}
+function boot(){
+ applyTheme();
+ state.apiPromise=api('/health').then(health=>{
+  state.api=true;state.modelReady=!!(health&&health.modelReady);
+  if(state.user)refreshTrainedScores();
+  return api('/model/metadata').then(out=>{
+   if(out&&out.valid&&out.metadata)state.modelMetadata=out.metadata;
+  }).catch(()=>null);
+ }).then(()=>{if(state.user)renderView();}).catch(()=>{state.api=false;state.modelReady=false;});
+ document.addEventListener('click',onDocClick);
+ document.addEventListener('change',onDocChange);
+ document.addEventListener('input',onDocInput);
+ document.addEventListener('submit',onDocSubmit);
+ document.addEventListener('keydown',onDocKey);
+ window.addEventListener('hashchange',renderApp);
+ if(window.matchMedia){
+  const mq=window.matchMedia('(prefers-color-scheme: dark)');
+  const onChange=()=>{if(state.theme==='system')applyTheme();};
+  if(mq.addEventListener)mq.addEventListener('change',onChange);
+  else if(mq.addListener)mq.addListener(onChange);
+ }
+ const lastUser=storageGet('session',null);
+ let resumed=false;
+ if(lastUser){const rec=loadAccount(lastUser);if(rec){signIn(lastUser,rec);resumed=true;}}
+ if(!location.hash)location.hash='#/dashboard';
+ if(!resumed)renderApp();
+ const results=runSelfTest();
+ const failed=results.filter(r=>!r.pass);
+ if(failed.length)showBanner(failed.length+' of '+results.length+' self-test checks failed. Open Settings → Self-test for details.');
+}
+boot();
+</script>
 </body>
 </html>
+
+
+
+
+

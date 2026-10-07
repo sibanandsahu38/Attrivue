@@ -1,0 +1,13 @@
+{
+  "name": "attrivue",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Attrivue — explainable employee attrition intelligence.",
+  "scripts": {
+    "start": "python backend/app.py",
+    "dev": "python backend/app.py",
+    "train": "python -m ml.train",
+    "test": "python -m unittest discover -s tests -v"
+  },
+  "license": "MIT"
+}
