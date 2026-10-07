@@ -1,34 +1,9 @@
-# Attrivue
+# IBM HR attrition data
 
-Attrition Predictor for HR managers. Scores, what-if, charts, and reports run in the browser. Accounts are stored in a SQLite database by the Python API.
+`ibm_hr_attrition.csv` is created the first time `python -m ml.train` runs.
 
-## Layout
+Source: the public IBM HR Analytics Employee Attrition & Performance table mirrored by IBM AIF360:
 
-- `index.html` — frontend
-- `ml/` — reproducible training and inference
-- `models/attrition_model.pkl` — trained model, created by `python -m ml.train`
-- `data/ibm_hr_attrition.csv` — IBM HR attrition table, downloaded on first training run
-- `backend/app.py` — Python API and static server
-- `backend/db.py` — SQLite schema
-- `backend/data/attrivue.sqlite` — account database, created on first run
-- `api/README.md` — route list
+https://raw.githubusercontent.com/IBM/employee-attrition-aif360/master/data/emp_attrition.csv
 
-Train the model before expecting live predictions:
-
-```bash
-pip install -r requirements.txt
-python -m ml.train
-python -m unittest tests.test_ml_pipeline
-python backend/app.py
-```
-
-## Run
-
-```bash
-pip install -r requirements.txt
-python backend/app.py
-```
-
-Open http://127.0.0.1:5000
-
-If you open `index.html` directly and the API is not running, accounts stay in this browser instead.
+It has 1,470 employees and 35 columns, including the `Attrition` target. The file was not already stored in this repository, so the loader downloads that public copy instead of inventing rows.
